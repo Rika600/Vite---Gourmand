@@ -4,13 +4,14 @@
 // Include any default variable overrides here (though functions won’t be available)
 $primary : #FFFDFA;
 $secondary : #F5B800;
-$dark : #432911;
-$black : #2C1A17;
+$dark :  #2C1A17;
+
 $font-family-sans-serif: "Lato", sans-serif !default;
 $font-family-serif: "Playfair Display",serif !default;
+
+
 
 @import "../node_modules/bootstrap/scss/bootstrap";
 
 // Then add additional custom code here
-
 
