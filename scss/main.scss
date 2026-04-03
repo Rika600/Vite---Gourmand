@@ -1,21 +1,13 @@
 @import url("/node_modules/bootstrap-icons/font/bootstrap-icons.css");
 @import 'custom';
 
-
-html{
-    position: relative;
-    min-height: 100%;
-}
-
 .navbar-brand {
     font-family: "Playfair Display", serif;
     font-weight: 400;
 }
 
-footer.footer{
-    position: absolute;
-    bottom: 0;
-    width: 100%;
+body {
+    overflow-x: hidden;
 }
 
 .like {
@@ -24,7 +16,7 @@ footer.footer{
     background-position: center 75%;
     height: 400px;
     position: relative;
-  }
+}
 
 .like::before {
     content: "";
@@ -38,21 +30,13 @@ footer.footer{
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-family: "Playfair Display",serif;
+    justify-content: center;
+    height: 100%;
+    font-family: "Playfair Display", serif;
     position: relative;
     z-index: 2;
 }
-
-.like-content h1 {
-  margin-top: 70px;
+h1, h2, h3 {
+    font-family: "Playfair Display", serif;
 }
 
-.like-content p {
-    margin-top: -5px;
-}
-
-.like-content button {
-    margin-top: 83%;
-}
-
- 

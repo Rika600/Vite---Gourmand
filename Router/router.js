@@ -30,6 +30,8 @@ const LoadContentPage = async () => {
     console.log("ROUTE trouvée:", actualRoute);
     const html = await fetch(actualRoute.pathHtml).then((data) => data.text());
     document.getElementById("main-page").innerHTML = html;
+     adjustMainHeight();
+    window.scrollTo(0, 0);
 
     if (actualRoute.pathJS != "") {
         var scriptTag = document.createElement("script");
@@ -57,3 +59,19 @@ window.onpopstate = LoadContentPage;
 window.route = routeEvent;
 // Chargement du contenu de la page au chargement initial
 LoadContentPage();
+
+
+function adjustMainHeight() {
+  const header = document.querySelector("header");
+  const footer = document.querySelector("footer");
+  const main = document.getElementById("main-page");
+
+  if (!main) return;
+
+  const headerHeight = header ? header.offsetHeight : 0;
+  const footerHeight = footer ? footer.offsetHeight : 0;
+
+  const availableHeight = window.innerHeight - footerHeight;
+
+  main.style.minHeight = availableHeight + "px";
+}
