@@ -417,3 +417,74 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- GROUPE 4 : Tables métier
+
+-- Table des commandes
+CREATE TABLE commande (
+  commande_id INT AUTO_INCREMENT PRIMARY KEY,
+  numero_commande VARCHAR(50) NOT NULL UNIQUE,
+  utilisateur_id INT NOT NULL,
+  menu_id INT NOT NULL,
+
+-- Détail prestation
+date_commande DATETIME NOT NULL DEFAULT current_timestamp,
+date_livraison DATE NOT NULL,
+heure_livraison TIME NOT NULL,
+adresse_livraison VARCHAR(255) NOT NULL,
+ville_livraison VARCHAR(100) NOT NULL,
+distance_km DECIMAL(6,2) NOT NULL DEFAULT 0,
+
+-- Calculs
+nombre_personnes INT NOT NULL,
+prix_menu_unitaire DECIMAL(10,2) NOT NULL,
+prix_menu_total DECIMAL(10,2) NOT NULL,
+prix_livraison DECIMAL(10,2) NOT NULL DEFAULT 0,
+reduction DECIMAL(10,2) NOT NULL DEFAULT 0,
+prix_total DECIMAL(10,2) NOT NULL,
+
+-- Satut et matériel
+statut ENUM(
+  'en_attente',
+  'accepte',
+  'en_preparation',
+  'en_cours_livraison',
+  'livre',
+  'en_attente_retour_materiel',
+  'terminee',
+  'annulee'
+) NOT NULL DEFAULT 'en_attente',
+pret_materiel BOOLEAN NOT NULL DEFAULT FALSE,
+materiel_restitue BOOLEAN NOT NULL DEFAULT FALSE,
+
+-- Motif d'annulation (si applicable)
+motif_annulation TEXT,
+mode_contact_annulation ENUM('telephone', 'email'),
+
+FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (utilisateur_id),
+FOREIGN KEY (menu_id) REFERENCES menu(menu_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--Table suivant de changements de statut (historique)
+CREATE TABLE suivi_commande (
+  suivi_id INT AUTO_INCREMENT PRIMARY KEY,
+  commande_id INT NOT NULL,
+  statut VARCHAR(50) NOT NULL,
+  date_changement DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  commentaire TEXT,
+  FOREIGN KEY (commande_id) REFERENCES commande(commande_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table des avis clients
+CREATE TABLE avis (
+  avis_id INT AUTO_INCREMENT PRIMARY KEY,
+  commande_id INT NOT NULL UNIQUE,
+  utilisateur_id INT NOT NULL,
+  note TINYINT NOT NULL CHECK (note BETWEEN 1 AND 5),
+  commentaire TEXT NOT NULL,
+  date_creation DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  statut_validation ENUM('en_attente', 'valide', 'refuse') NOT NULL DEFAULT 'en_attente',
+  date_validation DATETIME,
+  FOREIGN KEY (commande_id) REFERENCES commande(commande_id),
+  FOREIGN KEY (utilisateur_id) REFERENCES utilisateur(utilisateur_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
