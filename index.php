@@ -1,23 +1,19 @@
 <?php
-// 1. Connexion à la BDD
-require_once 'config/db.php';
+// 1. Charger les classes nécessaires
+require_once 'src/Database.php';
+require_once 'src/Models/Avis.php';
 
-// 2. Titre de la page (utilisé dans header.php)
+// 2. Récupérer la connexion PDO via la classe Database (Singleton)
+$pdo = Database::getConnection();
+
+// 3. Créer un objet Avis et récupérer les avis validés
+$avisModel = new Avis($pdo);
+$avis = $avisModel->getAvisValides(3);
+
+// 4. Titre de la page
 $pageTitle = 'Accueil - Vite & Gourmand';
 
-// 3. Récupération des avis validés depuis la BDD
-$stmt = $pdo->prepare("
-    SELECT a.note, a.commentaire, u.prenom, u.nom
-    FROM avis a
-    JOIN utilisateur u ON a.utilisateur_id = u.utilisateur_id
-    WHERE a.statut_validation = 'valide'
-    ORDER BY a.date_validation DESC
-    LIMIT 3
-");
-$stmt->execute();
-$avis = $stmt->fetchAll();
-
-// 4. Inclure le header
+// 5. Inclure le header
 require_once 'includes/header.php';
 ?>
 
@@ -60,10 +56,10 @@ require_once 'includes/header.php';
     </div>
 </div>
 
-<!-- Section Avis Clients (DYNAMIQUE depuis la BDD) -->
+<!-- Section Avis Clients -->
 <div class="container my-5 section-avis">
     <h2 class="text-center mb-4">AVIS CLIENTS</h2>
-    
+
     <?php if (empty($avis)): ?>
         <p class="text-center text-muted">Aucun avis validé pour le moment.</p>
     <?php else: ?>
@@ -86,6 +82,6 @@ require_once 'includes/header.php';
 </div>
 
 <?php
-// 5. Inclure le footer
+// 6. Inclure le footer
 require_once 'includes/footer.php';
 ?>
