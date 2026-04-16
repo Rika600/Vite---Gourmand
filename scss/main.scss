@@ -91,13 +91,12 @@ h3 {
 /* menus-maquette.html*/
 .menu-card {
     display: flex;
+    flex-direction: column;
     width: 100%;
-    max-width: 950px;
+    height: 101%;
     margin: 0 auto;
     background-color: $primary;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    gap: 20px;
-    align-items: flex-start;
 }
 
 .menu-left {
@@ -108,28 +107,28 @@ h3 {
 
 .menu-image-wrapper {
     position: relative;
-    width: 90%;
-    height: 586px;
+    width: 117%;
+    height: 550px;
     overflow: hidden;
 }
 
 .menu-image {
-    width: 100%;
-    height: 100%;
+    width: 202%;
+    height:102%;
     object-fit: cover;
     display: block;
 }
 
 .menu-bas {
-    margin-top: 19px;
-    font-size: 13px;
-    text-align: left;
+    width: 100%;
+    font-size: 12px;
+    width: 100%;
 }
 
 .menu-infos {
-    width: 50%;
+    width: 69%;
     text-align: center;
-    padding: 40px 35px 30px 35px;
+    padding: 40px 35px -2px 35px;
 }
 
 .menu-overlay {
@@ -165,7 +164,7 @@ h3 {
 }
 
 .plat-line {
-    width: 54%;
+    width: 70%;
     margin: 18px auto;
     border: none;
     border-top: 1px solid black;
@@ -178,7 +177,7 @@ h3 {
 
 
 .plat-type {
-    margin-top: -4px;    /* petit espace au-dessus du titre (proche de la ligne d'avant) */
+    margin-top: -11px;    /* petit espace au-dessus du titre (proche de la ligne d'avant) */
     margin-bottom: 33px; /* plus d'espace entre le titre et le nom du plat */
     font-family: "Playfair Display", serif;
     font-size: 18px;
@@ -189,106 +188,37 @@ h3 {
     margin-top: -11px;
     margin-bottom: 36px;
     font-family: "Lato", sans-serif;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 300;
 }
  .allergenes {
     position: relative;
-    top: 18px;
+    top: 3px;
+    font-size: 11px;
  }
 
  .prix {
     margin-top: 62px;
     margin-bottom: 3rem;
+    font-size: 12px;
  }   
  .menu-titre {
-    margin-bottom: -16px;
-    margin-top: -9px;
+    margin-bottom: -15px;
+    margin-top: 21px;
  }
 
-
-
-
-
-
-
-
-
-/* Formulaire 
-
-body {
-  width: 100%;
-  height: 100vh;
-  margin: 0;
-  background-color: #1b1b32;
-  color: #f5f6f7;
-  font-family: Tahoma;
-  font-size: 16px;
+.menus-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
 }
 
-h1, p {
-  margin: 1em auto;
-  text-align: center;
+.menu-top {
+    display: flex;                /* ← image + infos côte à côte */
+    align-items: flex-start;
 }
 
-form {
-  width: 60vw;
-  max-width: 500px;
-  min-width: 300px;
-  margin: 0 auto;
-  padding-bottom: 2em;
-}
 
-fieldset {
-  border: none;
-  padding: 2rem 0;
-  border-bottom: 3px solid #3b3b4f;
-}
 
-fieldset:last-of-type {
-  border-bottom: none;
-}
 
-label {
-  display: block;
-  margin: 0.5rem 0;
-}
 
-input,
-textarea,
-select {
-  margin: 10px 0 0 0;
-  width: 100%;
-  min-height: 2em;
-}
-
-input, textarea {
-  background-color: #0a0a23;
-  border: 1px solid #0a0a23;
-  color: #ffffff;
-}
-
-.inline {
-  width: unset;
-  margin: 0 0.5em 0 0;
-  vertical-align: middle;
-}
-
-input[type="submit"] {
-  display: block;
-  width: 60%;
-  margin: 1em auto;
-  height: 2em;
-  font-size: 1.1rem;
-  background-color: #3b3b4f;
-  border-color: white;
-  min-width: 300px;
-}
-
-input[type="file"] {
-  padding: 1px 2px;
-}
-
-a {
-  color: #dfdfe2; 
-} */
