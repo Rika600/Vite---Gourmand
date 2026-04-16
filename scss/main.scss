@@ -88,6 +88,132 @@ h3 {
       font-weight: 400;
 }
 
+/* menus-maquette.html*/
+.menu-card {
+    display: flex;
+    width: 100%;
+    max-width: 950px;
+    margin: 0 auto;
+    background-color: $primary;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.menu-left {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-image-wrapper {
+    position: relative;
+    width: 90%;
+    height: 586px;
+    overflow: hidden;
+}
+
+.menu-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.menu-bas {
+    margin-top: 19px;
+    font-size: 13px;
+    text-align: left;
+}
+
+.menu-infos {
+    width: 50%;
+    text-align: center;
+    padding: 40px 35px 30px 35px;
+}
+
+.menu-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: 0.3s;
+}
+
+.menu-image-wrapper:hover .menu-overlay {
+    opacity: 1;
+}
+
+.overlay-button {
+    background: #111;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+}
+
+.theme-line {
+    width: 380px;
+    margin: 8px auto 35px auto;
+    border: none;
+    border-top: 1px solid #bdb7ad;
+    border-top: 1px solid black;
+    opacity: 1;
+}
+
+.plat-line {
+    width: 54%;
+    margin: 18px auto;
+    border: none;
+    border-top: 1px solid black;
+    opacity: 1;
+}
+
+.menu-titre {
+  margin-bottom: 30px;
+}
+
+
+.plat-type {
+    margin-top: -4px;    /* petit espace au-dessus du titre (proche de la ligne d'avant) */
+    margin-bottom: 33px; /* plus d'espace entre le titre et le nom du plat */
+    font-family: "Playfair Display", serif;
+    font-size: 18px;
+    font-weight: 400;
+}
+
+.plat-nom {
+    margin-top: -11px;
+    margin-bottom: 36px;
+    font-family: "Lato", sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+}
+ .allergenes {
+    position: relative;
+    top: 18px;
+ }
+
+ .prix {
+    margin-top: 62px;
+    margin-bottom: 3rem;
+ }   
+ .menu-titre {
+    margin-bottom: -16px;
+    margin-top: -9px;
+ }
+
+
+
+
+
+
+
+
+
 /* Formulaire 
 
 body {
