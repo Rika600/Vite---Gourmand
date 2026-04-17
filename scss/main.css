@@ -12066,11 +12066,23 @@ h3, .h3 {
 }
 
 /* menus-maquette.html*/
+.menu-wrapper {
+  margin-bottom: 20px;
+}
+
+.theme-titre {
+  margin-top: 55px;
+  margin-bottom: 34px;
+}
+
+.text-center {
+  font-family: Playfair Display;
+}
+
 .menu-card {
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 101%;
   margin: 0 auto;
   background-color: #FFFDFA;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -12084,14 +12096,14 @@ h3, .h3 {
 
 .menu-image-wrapper {
   position: relative;
-  width: 117%;
-  height: 550px;
+  width: 98%;
+  height: 300px;
   overflow: hidden;
 }
 
 .menu-image {
   width: 202%;
-  height: 102%;
+  height: 99%;
   -o-object-fit: cover;
      object-fit: cover;
   display: block;
@@ -12133,24 +12145,21 @@ h3, .h3 {
 }
 
 .theme-line {
-  width: 380px;
-  margin: 8px auto 35px auto;
+  width: 277px;
+  margin: 4px auto 35px auto;
   border: none;
   border-top: 1px solid #bdb7ad;
   border-top: 1px solid black;
   opacity: 1;
+  margin-bottom: 87px;
 }
 
 .plat-line {
-  width: 70%;
+  width: 52%;
   margin: 18px auto;
   border: none;
   border-top: 1px solid black;
   opacity: 1;
-}
-
-.menu-titre {
-  margin-bottom: 30px;
 }
 
 .plat-type {
@@ -12171,13 +12180,13 @@ h3, .h3 {
 
 .allergenes {
   position: relative;
-  top: 3px;
+  top: 25px;
   font-size: 11px;
 }
 
 .prix {
-  margin-top: 62px;
-  margin-bottom: 3rem;
+  margin-top: 50px;
+  margin-bottom: 2rem;
   font-size: 12px;
 }
 
@@ -12189,10 +12198,25 @@ h3, .h3 {
 .menus-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  gap: 183px 150px;
 }
 
 .menu-top {
   display: flex; /* ← image + infos côte à côte */
   align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+  .menus-grid {
+    grid-template-columns: 1fr; /* 1 colonne au lieu de 2 */
+  }
+  .menu-top {
+    flex-direction: column; /* image AU-DESSUS des infos */
+  }
+  .menu-left {
+    width: 100%; /* image prend toute la largeur */
+  }
+  .menu-infos {
+    width: 100%; /* infos prennent toute la largeur */
+  }
 }/*# sourceMappingURL=main.css.map */
