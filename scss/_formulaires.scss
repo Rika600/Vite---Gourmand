@@ -1,0 +1,37 @@
+/* Formulaire */
+
+
+.formulaire-contact {
+    width: 60%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.formulaire-contact fieldset {
+    border: none;
+    padding: 1rem 0;
+}
+
+.formulaire-contact label {
+    display: block;
+    margin: 1rem 0 0.5rem 0;
+    font-family: "Lato", sans-serif;
+}
+
+.formulaire-contact input,
+.formulaire-contact textarea {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    margin-top: 5px;
+    border: 1px solid #bdb7ad;
+    background-color: $primary;
+    font-family: "Lato", sans-serif;
+}
+
+.formulaire-contact input[type="submit"] {
+    display: block;
+    width: 60%;
+    margin: 2rem auto;
+    cursor: pointer;
+};
