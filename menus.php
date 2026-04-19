@@ -7,17 +7,97 @@ require_once __DIR__ . '/src/Models/Menu.php';
 $pdo = Database::getConnection();
 $menuModel = new Menu($pdo);
 $menus = $menuModel->getAll();
+
+// Récupérer les thèmes et régimes pour les filtres
+$themes = $pdo->query("SELECT * FROM theme ORDER BY libelle")->fetchAll();
+$regimes = $pdo->query("SELECT * FROM regime ORDER BY libelle")->fetchAll();
 ?>
 
-<div class="container my-5">
-    <h1 class="text-center mb-5">Menus</h1>
 
-    <div class="menus-grid">
+    <!-- ========== FILTRES========== -->
+    <div class="container my-5">
+
+    <!-- Icône filtre + Titre -->
+    <div class="d-flex align-items-center mb-5">
+     <button id="btn-toggle-filtres" class="btn p-0 me-3" aria-label="Ouvrir les filtres">
+    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+    </svg>
+</button>  
+        <h1 class="text-center flex-grow-1 m-0">Menus</h1>
+    </div>
+
+    <!-- Panneau filtres déroulant (caché par défaut) -->
+    <div id="filtres-panel" class="filtres-container mb-4" style="display: none;">
+
+      <div class="row g-3 flex-column" style="max-width: 250px;">
+            <div class="col-md-2">
+                <label for="filtre-theme" class="form-label">Thème</label>
+                <select id="filtre-theme" class="form-select">
+                    <option value="">Tous</option>
+                    <?php foreach ($themes as $t) : ?>
+                        <option value="<?= $t['theme_id'] ?>"><?= htmlspecialchars($t['libelle']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label for="filtre-regime" class="form-label">Régime</label>
+                <select id="filtre-regime" class="form-select">
+                    <option value="">Tous</option>
+                    <?php foreach ($regimes as $r) : ?>
+                        <option value="<?= $r['regime_id'] ?>"><?= htmlspecialchars($r['libelle']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label for="filtre-prix-max" class="form-label">Prix max (€/pers)</label>
+                <select id="filtre-prix-max" class="form-select">
+                    <option value="">Tous</option>
+                    <option value="45">45 €</option>
+                    <option value="50">50 €</option>
+                    <option value="65">65 €</option>
+                    <option value="100">100 €</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label for="filtre-prix-min" class="form-label">Prix min (€/pers)</label>
+                <select id="filtre-prix-min" class="form-select">
+                    <option value="">Tous</option>
+                    <option value="42">42 €</option>
+                    <option value="45">45 €</option>
+                    <option value="50">50 €</option>
+                    <option value="65">65 €</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label for="filtre-personnes" class="form-label">Personnes min</label>
+                <select id="filtre-personnes" class="form-select">
+                    <option value="">Tous</option>
+                    <option value="8">8</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="mt-3">
+            <button id="btn-filtrer" class="btn btn-dark px-4">Filtrer</button>
+            <button id="btn-reset" class="btn btn-outline-dark px-4 ms-2">Réinitialiser</button>
+        </div>
+    </div>
+
+    <!-- ========== GRILLE DES MENUS ========== -->
+    <div class="menus-grid" id="menus-grid">
 
     <?php foreach ($menus as $menu) : ?>
         <?php
-        $themes = $menuModel->getThemes($menu['menu_id']);
-        $theme = $themes[0]['libelle'] ?? 'Menu';
+        $themesMenu = $menuModel->getThemes($menu['menu_id']);
+        $theme = $themesMenu[0]['libelle'] ?? 'Menu';
         ?>
 
         <div class="menu-wrapper">
@@ -60,5 +140,7 @@ $menus = $menuModel->getAll();
 
     </div>
 </div>
+
+<script src="/vite-gourmand/js/filtres.js"></script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

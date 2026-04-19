@@ -692,3 +692,5 @@ INSERT INTO plat_allergene (plat_id, allergene_id) VALUES
 (12, 1),  -- Bûche → Gluten
 (12, 3),  -- Bûche → Œufs
 (12, 7);  -- Bûche → Lait
+
+
