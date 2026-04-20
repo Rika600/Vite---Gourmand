@@ -1,3 +1,4 @@
+<?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -28,6 +29,11 @@
                     <li class="nav-item"><a class="nav-link text-white" href="/vite-gourmand/livraison.php">LIVRAISON</a></li>
                     <li class="nav-item"><a class="nav-link text-white" href="/vite-gourmand/compte.php">COMPTE</a></li>
                     <li class="nav-item"><a class="nav-link text-white" href="/vite-gourmand/contact.php">CONTACT</a></li>
+                    <?php if (isset($_SESSION['utilisateur_id'])) : ?>
+                    <li class="nav-item">
+                    <a class="nav-link text-white" href="/vite-gourmand/deconnexion.php">DÉCONNEXION</a>
+                    </li>
+                 <?php endif; ?>
                 </ul>
             </div>
         </div>
