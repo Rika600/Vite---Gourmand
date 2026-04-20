@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <?php if (!isset($_SESSION['utilisateur_id'])) : ?>
         <div class="alert alert-warning text-center">
-            Vous devez <a href="/vite-gourmand/compte.php">vous connecter</a> pour passer commande.
+            Vous devez <a href="/vite-gourmand/compte.php" style="color: #432911; text-decoration: underline;" >vous connecter</a> pour passer commande.
         </div>
     <?php else : ?>
 
@@ -242,7 +242,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <strong>Majoration transport :</strong> Facturation de 5 euros majorée de 59 centimes par kilomètre parcouru si la livraison n'est pas dans la ville de Bordeaux. Livraison gratuite dans Bordeaux.
     </p>
     <p class="mt-2" style="font-size: 12px;">
-    <strong>Matériel :</strong> En cas de prêt de matériel, celui-ci doit être restitué sous 10 jours ouvrés. Passé ce délai, une facturation de 600 € sera appliquée (voir CGV).
+    <strong>Matériel :</strong> En cas de prêt de matériel, celui-ci doit être restitué sous 10 jours ouvrés. Passé ce délai, une facturation de 600 € sera appliquée (voir <a href="/vite-gourmand/cgv.php" style="color: #432911; text-decoration: underline;">CGV</a> ).
 </p>
 
 </div>
