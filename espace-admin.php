@@ -5,6 +5,7 @@ require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/src/Database.php';
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/mailer.php';
+require_once __DIR__ . '/config.php';
 
 // Vérifier que c'est un admin (role_id = 1)
 if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
@@ -78,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reactiver_employe']))
 $employes = $pdo->query("SELECT * FROM utilisateur WHERE role_id = 2 ORDER BY email")->fetchAll();
 
 // Récupérer les stats commandes depuis MongoDB
-$client = new MongoDB\Client("mongodb+srv://karima740_db_user:OKmvBeGmG2WP4bpO@cluster0.hsa6bee.mongodb.net/?appName=Cluster0");
+$client = new MongoDB\Client(MONGODB_URI);
 $db = $client->vite_gourmand;
 $collection =$db->stats_commandes;
 $stats = $collection->find([], ['sort' => ['menu_id' => 1]]);

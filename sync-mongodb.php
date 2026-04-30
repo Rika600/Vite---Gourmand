@@ -2,6 +2,7 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/src/Database.php';
+require_once __DIR__ . '/config.php';
 
 // 1. Connexion à MySQL
 $pdo = Database::getConnection();
@@ -21,7 +22,7 @@ $stmt->execute();
 $stats = $stmt->fetchAll();
 
 //3. Connexion à MongoDB Atlas
-$client = new MongoDB\Client("mongodb+srv://karima740_db_user:OKmvBeGmG2WP4bpO@cluster0.hsa6bee.mongodb.net/?appName=Cluster0");
+$client = new MongoDB\Client(MONGODB_URI);
 $db = $client->vite_gourmand;
 $collection = $db->stats_commandes;
 
