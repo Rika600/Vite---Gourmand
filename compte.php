@@ -2,6 +2,7 @@
 $pageTitle = 'Mon Compte - Vite & Gourmand';
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/src/Database.php';
+require_once __DIR__ . '/mailer.php';
 
 $pdo = Database::getConnection();
 
@@ -70,6 +71,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['inscription'])) {
                 ':adresse' => $adresse,
                 ':ville' => $ville
             ]);
+            envoyerMail($email, 'Bienvenue chez Vite & Gourmand !',
+            '<h2>Bienvenue' . htmlspecialchars($prenom) . ' !</h2>
+            <p>Votre compte a été créé avec succès.</p>
+            <p>Vous puvez maintenant commander nos menus traiteur.</p>
+            <p>A bientôt,<br>L\'équipe Vite & Gourmand</p>'
+            );
             $message_succes = 'Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter.';
         }
     }

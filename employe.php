@@ -3,6 +3,7 @@ session_start();
 $pageTitle = 'Espace Employé - Vite & Gourmand';
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/src/Database.php';
+require_once __DIR__ . '/mailer.php';
 
 // Vérifier que c'est un employé ou admin (role_id 1 ou 2)
 if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] != 1 && $_SESSION['role_id'] != 2)) {
@@ -43,6 +44,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changer_statut'])) {
         // Ajouter au suivi
         $stmt = $pdo->prepare("INSERT INTO suivi_commande (commande_id, statut) VALUES (:id, :statut)");
         $stmt->execute([':id' => $commandeId, ':statut' => $nouveauStatut]);
+
+        // Si commande terminée, envoyer mail pour donner un avis
+        if ($nouveauStatut === 'terminee') {
+            $stmt = $pdo->prepare("SELECT u.email, u.prenom, c.numero_commande FROM commande c JOIN utilisateur u ON c.utilisateur_id WHERE c.commande_id = :id");
+            $stmt->execute([':id' => $commandeId]);
+            $infos = $stmt->fetch();
+            if($infos) {
+                envoyerMail($infos['email'], 'Donnez votre avis - Vite & Gourmand',
+                '<h2>Votre commande est terminée !</h2>
+                 <p>Bonjour ' . htmlspecialchars($infos['prenom']) . ',</p>
+                    <p>Votre commande <strong>' . htmlspecialchars($infos['numero_commande']) . '</strong> est terminée.</p>
+                    <p>Nous espérons que vous avez apprécié notre prestation !</p>
+                    <p>N\'hésitez pas à nous laisser un avis depuis votre espace client.</p>
+                    <p>L\'équipe Vite & Gourmand</p>'
+                 );
+            }
+        }
 
         $message_succes = 'Statut mis à jour.';
     }

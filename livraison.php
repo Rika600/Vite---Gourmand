@@ -4,6 +4,7 @@ $pageTitle = 'Livraison - Vite & Gourmand';
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/src/Database.php';
 require_once __DIR__ . '/src/Models/Menu.php';
+require_once __DIR__ . '/mailer.php';
 
 $pdo = Database::getConnection();
 $menuModel = new Menu($pdo);
@@ -87,7 +88,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':reduc' => $reduction,
                 ':total' => $total
             ]);
+            // Envoyer le mail de confirmation de commande
+            envoyerMail($_SESSION['email'], 'Confirmation de commande' . $numero,
+            '<h2>Commande confirmée !</h2>
+            <p>Bonjour ' . htmlspecialchars($_SESSION['prenom']) . ',</p>
+            <p>Votre commande <strong>' . $numero . '</strong> a bien été enregistrée.</p>
+            <p>Menu : ' . htmlspecialchars($menu['titre']) . '</p>
+            <p>Date de livraison : ' . htmlspecialchars($date_livraison) . ' à ' . htmlspecialchars($heure_livraison) . '</p>
+            <p>Total : ' . number_format($total, 2, ',', '') . '€</p>
+            <p>Merci pour votre confiance !<br>L\'équipe Vite & Gourmand</p>'
+            );
 
+            // Mail rappel retour matériel
+            envoyerMail($_SESSION['email'], 'Rappel : retour du matériel prêté',
+            '<h2>Information matériel</h2>
+            <p>Bonjour ' . htmlspecialchars($_SESSION['prenom']) . ',</p>
+            <p>Suite à votre commande <strong>' . $numero .'</strong>, du matériel vous sera prêté pour la presentation.</p>
+            <p>Ce matériel doit être restitué sous <strong>10 jours ouvrés</strong> après la prestation.</p>
+            <p>Passé ce délai, une facturation de <strong>600€</strong> sera appliquée conformément à nos CGV.</p>
+            <p>L\'équipe Vite & Gourmand</p>'
+            );
             $message_succes = 'Commande ' . $numero . ' enregistrée ! Total : ' . number_format($total, 2, ',', ' ') . ' €';
         }
     }

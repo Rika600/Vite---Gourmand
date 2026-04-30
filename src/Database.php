@@ -6,7 +6,7 @@
 
   // Méthode statique qui retourne toujours la MÊME connexion PDO (pattern Singleton)
   public static function getConnection(): PDO {
-    if (self::$instance ===null) {
+    if (self::$instance === null) {
         $host     = '127.0.0.1';
             $port     = '3307';
             $dbname   = 'vite_gourmand';

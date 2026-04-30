@@ -3,6 +3,8 @@ session_start();
 $pageTitle = 'Espace Admin - Vite & Gourmand';
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/src/Database.php';
+require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/mailer.php';
 
 // Vérifier que c'est un admin (role_id = 1)
 if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
@@ -41,6 +43,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['creer_employe'])) {
                 ':email' => $email,
                 ':password' => $hash
             ]);
+
+            // Envoyer mail au nouvel employé
+            envoyerMail($email, 'Votre compte employé - Vite & Gourmand',
+            '<h2>Bienvenue dans l\'équipe !</h2>
+            <p>Un compte employé a été créé pour vous sur Vite & Gourmand.</p>
+            <p>Votre indentifiant : <strong>' . htmlspecialchars($email) . '</strong></p>)
+            <p>Votre mot de passe : <strong>' . htmlspecialchars($mdp) . '</strong></p>)
+            <p>Nous vous conseillons de changer votre mot de passe après votre première connexion.</p>
+            <p>L\'équipe Vite & Gourmand</p>'
+            );
             $message_succes = 'Compte employé créé pour ' . htmlspecialchars($email) . '.';
         }
     }
@@ -65,14 +77,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reactiver_employe']))
 // Récupérer les employés
 $employes = $pdo->query("SELECT * FROM utilisateur WHERE role_id = 2 ORDER BY email")->fetchAll();
 
-// Récupérer les stats commandes par menu
-$stats = $pdo->query("
-    SELECT m.titre, COUNT(c.commande_id) AS nb_commandes, SUM(c.prix_total) AS chiffre_affaires
-    FROM menu m
-    LEFT JOIN commande c ON m.menu_id = c.menu_id AND c.statut != 'annulee'
-    GROUP BY m.menu_id, m.titre
-    ORDER BY m.menu_id
-")->fetchAll();
+// Récupérer les stats commandes depuis MongoDB
+$client = new MongoDB\Client("mongodb+srv://karima740_db_user:OKmvBeGmG2WP4bpO@cluster0.hsa6bee.mongodb.net/?appName=Cluster0");
+$db = $client->vite_gourmand;
+$collection =$db->stats_commandes;
+$stats = $collection->find([], ['sort' => ['menu_id' => 1]]);
+$stats = iterator_to_array($stats);
 
 // Préparer les données pour Chart.js
 $labels = [];
