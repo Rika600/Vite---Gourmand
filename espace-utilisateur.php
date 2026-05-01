@@ -59,13 +59,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['annuler_commande'])) 
     } else {
         $message_erreur = 'Impossible d\'annuler cette commande.';
     }
+      }
+    // ========== MODIFIER UNE COMMANDE ==========
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_commande'])) {
+    $commandeId = (int)$_POST['commande_id'];
+    $date_livraison = $_POST['date_livraison'] ?? '';
+    $heure_livraison = $_POST['heure_livraison'] ?? '';
+    $adresse_livraison = trim($_POST['adresse_livraison'] ?? '');
+    $nombre_personnes = (int)$_POST['nombre_personnes'];
+
+    // Vérifier que la commande appartient à l'utilisateur et est en_attente
+    $stmt = $pdo->prepare("SELECT * FROM commande WHERE commande_id = :id AND utilisateur_id = :user_id AND statut = 'en_attente'");
+    $stmt->execute([':id' => $commandeId, ':user_id' => $userId]);
+    $commande = $stmt->fetch();
+
+    if ($commande) {
+        $sql = "UPDATE commande SET date_livraison = :date, heure_livraison = :heure, adresse_livraison = :adresse, nombre_personnes = :nb WHERE commande_id = :id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':date' => $date_livraison,
+            ':heure' => $heure_livraison,
+            ':adresse' => $adresse_livraison,
+            ':nb' => $nombre_personnes,
+            ':id' => $commandeId
+        ]);
+        $message_succes = 'Commande modifiée avec succès.';
+    } else {
+        $message_erreur = 'Impossible de modifier cette commande.';
+    }
 }
 
-// ========== DONNER UN AVIS ==========
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['donner_avis'])) {
-    $commandeId = (int)$_POST['commande_id'];
-    $note = (int)$_POST['note'];
-    $commentaire = trim($_POST['commentaire'] ?? '');
+
+    // ========== DONNER UN AVIS ==========
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['donner_avis'])) {
+        $commandeId = (int)$_POST['commande_id'];
+        $note = (int)$_POST['note'];
+        $commentaire = trim($_POST['commentaire'] ?? '');
 
     if ($note < 1 || $note > 5 || $commentaire === '') {
         $message_erreur = 'Note entre 1 et 5 et commentaire obligatoire.';
@@ -168,13 +197,55 @@ $avisExistants = $stmt->fetchAll(PDO::FETCH_COLUMN);
                 <p><strong>Total :</strong> <?= number_format($cmd['prix_total'], 2, ',', ' ') ?> €</p>
                 <p><strong>Statut :</strong> <?= htmlspecialchars($cmd['statut']) ?></p>
 
-                <!-- Annuler si en_attente -->
-                <?php if ($cmd['statut'] === 'en_attente') : ?>
+                <!-- Annuler et Modifier si en_attente -->
+                 <?php if ($cmd['statut'] === 'en_attente') : ?>
                     <form method="post" action="espace-utilisateur.php" style="display: inline;">
                         <input type="hidden" name="commande_id" value="<?= $cmd['commande_id'] ?>">
                         <input type="hidden" name="annuler_commande" value="1">
                         <button type="submit" class="btn btn-outline-dark btn-sm">Annuler</button>
                     </form>
+
+                    <button class="btn btn-dark btn-sm" onclick="document.getElementById('modif-<?= $cmd['commande_id'] ?>').style.display='block'">Modifier</button>
+
+                    <div id="modif-<?= $cmd['commande_id'] ?>" style="display:none;" class="mt-3">
+                        <form method="post" action="espace-utilisateur.php" class="formulaire-contact">
+                            <input type="hidden" name="commande_id" value="<?= $cmd['commande_id'] ?>">
+                            <input type="hidden" name="modifier_commande" value="1">
+
+                            <label for="date-<?= $cmd['commande_id'] ?>">Date de livraison :
+                                <input id="date-<?= $cmd['commande_id'] ?>" name="date_livraison" type="date" value="<?= htmlspecialchars($cmd['date_livraison']) ?>" required>
+                            </label>
+
+                            <label for="heure-<?= $cmd['commande_id'] ?>">Heure :
+                                <input id="heure-<?= $cmd['commande_id'] ?>" name="heure_livraison" type="time" value="<?= htmlspecialchars($cmd['heure_livraison']) ?>" required>
+                            </label>
+
+                            <label for="adresse-<?= $cmd['commande_id'] ?>">Adresse de livraison :
+                                <input id="adresse-<?= $cmd['commande_id'] ?>" name="adresse_livraison" type="text" value="<?= htmlspecialchars($cmd['adresse_livraison']) ?>" required>
+                            </label>
+
+                            <label for="nb-<?= $cmd['commande_id'] ?>">Nombre de personnes :
+                                <input id="nb-<?= $cmd['commande_id'] ?>" name="nombre_personnes" type="number" min="1" value="<?= $cmd['nombre_personnes'] ?>" required>
+                            </label>
+
+                            <button type="submit" class="btn btn-dark btn-sm">Enregistrer</button>
+                        </form>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Suivi de commande -->
+                <?php
+                $stmt_suivi = $pdo->prepare("SELECT statut, date_changement FROM suivi_commande WHERE commande_id = :id ORDER BY date_changement ASC");
+                $stmt_suivi->execute([':id' => $cmd['commande_id']]);
+                $suivis = $stmt_suivi->fetchAll();
+                ?>
+                <?php if (!empty($suivis)) : ?>
+                    <div class="mt-3">
+                        <p><strong>Suivi :</strong></p>
+                        <?php foreach ($suivis as $suivi) : ?>
+                            <p>— <?= htmlspecialchars($suivi['statut']) ?> le <?= date('d/m/Y à H:i', strtotime($suivi['date_changement'])) ?></p>
+                        <?php endforeach; ?>
+                    </div>
                 <?php endif; ?>
 
                 <!-- Donner un avis si terminée et pas encore d'avis -->

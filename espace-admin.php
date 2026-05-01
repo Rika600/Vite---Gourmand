@@ -7,43 +7,43 @@ require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/mailer.php';
 require_once __DIR__ . '/config.php';
 
-// Vérifier que c'est un admin (role_id = 1)
-if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
-    echo '<div class="container my-5"><div class="alert alert-warning text-center">Accès réservé à l\'administrateur.</div></div>';
-    require_once __DIR__ . '/includes/footer.php';
-    exit;
-}
+    // Vérifier que c'est un admin (role_id = 1)
+    if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
+        echo '<div class="container my-5"><div class="alert alert-warning text-center">Accès réservé à l\'administrateur.</div></div>';
+        require_once __DIR__ . '/includes/footer.php';
+        exit;
+    }
 
 $pdo = Database::getConnection();
 
 $message_succes = '';
 $message_erreur = '';
 
-// ========== CRÉER UN EMPLOYÉ ==========
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['creer_employe'])) {
-    $email = trim($_POST['email_employe'] ?? '');
-    $mdp = $_POST['mdp_employe'] ?? '';
+    // ========== CRÉER UN EMPLOYÉ ==========
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['creer_employe'])) {
+        $email = trim($_POST['email_employe'] ?? '');
+        $mdp = $_POST['mdp_employe'] ?? '';
 
-    if ($email === '' || $mdp === '') {
-        $message_erreur = 'Email et mot de passe obligatoires.';
-    } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $message_erreur = 'Email invalide.';
-    } else {
-        // Vérifier si l'email existe déjà
-        $stmt = $pdo->prepare("SELECT utilisateur_id FROM utilisateur WHERE email = :email");
-        $stmt->execute([':email' => $email]);
-
-        if ($stmt->fetch()) {
-            $message_erreur = 'Cette adresse email est déjà utilisée.';
+        if ($email === '' || $mdp === '') {
+            $message_erreur = 'Email et mot de passe obligatoires.';
+        } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $message_erreur = 'Email invalide.';
         } else {
-            $hash = password_hash($mdp, PASSWORD_BCRYPT);
-            $sql = "INSERT INTO utilisateur (email, password, nom, prenom, telephone, adresse_postale, ville, role_id) 
-                    VALUES (:email, :password, '', '', '', '', '', 2)";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                ':email' => $email,
-                ':password' => $hash
-            ]);
+            // Vérifier si l'email existe déjà
+            $stmt = $pdo->prepare("SELECT utilisateur_id FROM utilisateur WHERE email = :email");
+            $stmt->execute([':email' => $email]);
+
+            if ($stmt->fetch()) {
+                $message_erreur = 'Cette adresse email est déjà utilisée.';
+            } else {
+                $hash = password_hash($mdp, PASSWORD_BCRYPT);
+                $sql = "INSERT INTO utilisateur (email, password, nom, prenom, telephone, adresse_postale, ville, role_id) 
+                        VALUES (:email, :password, '', '', '', '', '', 2)";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([
+                    ':email' => $email,
+                    ':password' => $hash
+                ]);
 
             // Envoyer mail au nouvel employé
             envoyerMail($email, 'Votre compte employé - Vite & Gourmand',
@@ -59,71 +59,113 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['creer_employe'])) {
     }
 }
 
-// ========== DÉSACTIVER UN EMPLOYÉ ==========
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['desactiver_employe'])) {
-    $employeId = (int)$_POST['employe_id'];
-    $stmt = $pdo->prepare("UPDATE utilisateur SET actif = 0 WHERE utilisateur_id = :id AND role_id = 2");
-    $stmt->execute([':id' => $employeId]);
-    $message_succes = 'Compte employé désactivé.';
+    // ========== DÉSACTIVER UN EMPLOYÉ ==========
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['desactiver_employe'])) {
+        $employeId = (int)$_POST['employe_id'];
+        $stmt = $pdo->prepare("UPDATE utilisateur SET actif = 0 WHERE utilisateur_id = :id AND role_id = 2");
+        $stmt->execute([':id' => $employeId]);
+        $message_succes = 'Compte employé désactivé.';
+    }
+
+    // ========== RÉACTIVER UN EMPLOYÉ ==========
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reactiver_employe'])) {
+        $employeId = (int)$_POST['employe_id'];
+        $stmt = $pdo->prepare("UPDATE utilisateur SET actif = 1 WHERE utilisateur_id = :id AND role_id = 2");
+        $stmt->execute([':id' => $employeId]);
+        $message_succes = 'Compte employé réactivé.';
+    }
+
+    // Récupérer les employés
+    $employes = $pdo->query("SELECT * FROM utilisateur WHERE role_id = 2 ORDER BY email")->fetchAll();
+
+    // Récupérer les stats commandes depuis MongoDB
+    $client = new MongoDB\Client(MONGODB_URI);
+    $db = $client->vite_gourmand;
+    $collection =$db->stats_commandes;
+    $stats = $collection->find([], ['sort' => ['menu_id' => 1]]);
+    $stats = iterator_to_array($stats);
+
+    // Appliquer les filtres CA
+    $filtre_menu = $_GET['filtre_menu'] ?? '';
+    $date_debut = $_GET['date_debut'] ?? '';
+    $date_fin = $_GET['date_fin'] ?? '';
+
+    if ($filtre_menu !== '' || $date_debut !== '' || $date_fin !== '') {
+        // Si filtre par menu
+        if ($filtre_menu !== '') {
+            $stats = array_filter($stats, function($s) use ($filtre_menu) {
+                return $s['titre'] === $filtre_menu;
+            });
+        }
+    
+    // Si filtre par date, recalculer depuis MySQL
+    if ($date_debut !== '' || $date_fin !== '') {
+        $sqlFiltre = "SELECT m.titre, COUNT(c.commande_id) AS nb_commandes, COALESCE(SUM(c.prix_total), 0) AS chiffre_affaires
+            FROM menu m
+            LEFT JOIN commande c ON m.menu_id = c.menu_id AND c.statut != 'annulee'";
+        $paramsFiltre = [];
+        
+        if ($date_debut !== '') {
+            $sqlFiltre .= " AND c.date_commande >= :debut";
+            $paramsFiltre[':debut'] = $date_debut;
+        }
+        if ($date_fin !== '') {
+            $sqlFiltre .= " AND c.date_commande <= :fin";
+            $paramsFiltre[':fin'] = $date_fin . ' 23:59:59';
+        }
+        
+        $sqlFiltre .= " GROUP BY m.menu_id, m.titre ORDER BY m.menu_id";
+        $stmt = $pdo->prepare($sqlFiltre);
+        $stmt->execute($paramsFiltre);
+        $stats = $stmt->fetchAll();
+        
+        if ($filtre_menu !== '') {
+            $stats = array_filter($stats, function($s) use ($filtre_menu) {
+                return $s['titre'] === $filtre_menu;
+            });
+        }
+    }
 }
 
-// ========== RÉACTIVER UN EMPLOYÉ ==========
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reactiver_employe'])) {
-    $employeId = (int)$_POST['employe_id'];
-    $stmt = $pdo->prepare("UPDATE utilisateur SET actif = 1 WHERE utilisateur_id = :id AND role_id = 2");
-    $stmt->execute([':id' => $employeId]);
-    $message_succes = 'Compte employé réactivé.';
-}
+    // Préparer les données pour Chart.js
+    $labels = [];
+    $nbCommandes = [];
+    $ca = [];
+    foreach ($stats as $s) {
+        $labels[] = $s['titre'];
+        $nbCommandes[] = (int)$s['nb_commandes'];
+        $ca[] = (float)$s['chiffre_affaires'];
+    }
+    ?>
 
-// Récupérer les employés
-$employes = $pdo->query("SELECT * FROM utilisateur WHERE role_id = 2 ORDER BY email")->fetchAll();
+    <div class="container my-5">
+        <h1 class="text-center mb-5">Espace Administrateur</h1>
 
-// Récupérer les stats commandes depuis MongoDB
-$client = new MongoDB\Client(MONGODB_URI);
-$db = $client->vite_gourmand;
-$collection =$db->stats_commandes;
-$stats = $collection->find([], ['sort' => ['menu_id' => 1]]);
-$stats = iterator_to_array($stats);
+        <?php if ($message_succes !== '') : ?>
+            <div class="alert alert-success text-center"><?= htmlspecialchars($message_succes) ?></div>
+        <?php endif; ?>
 
-// Préparer les données pour Chart.js
-$labels = [];
-$nbCommandes = [];
-$ca = [];
-foreach ($stats as $s) {
-    $labels[] = $s['titre'];
-    $nbCommandes[] = (int)$s['nb_commandes'];
-    $ca[] = (float)$s['chiffre_affaires'];
-}
-?>
+        <?php if ($message_erreur !== '') : ?>
+            <div class="alert alert-danger text-center"><?= htmlspecialchars($message_erreur) ?></div>
+        <?php endif; ?>
 
-<div class="container my-5">
-    <h1 class="text-center mb-5">Espace Administrateur</h1>
+        <!-- ========== CRÉER UN EMPLOYÉ ========== -->
+        <h2 class="mb-3">Créer un compte employé</h2>
 
-    <?php if ($message_succes !== '') : ?>
-        <div class="alert alert-success text-center"><?= htmlspecialchars($message_succes) ?></div>
-    <?php endif; ?>
+        <form method="post" action="espace-admin.php" class="formulaire-contact mb-5">
+            <fieldset>
+                <label for="email_employe">Email (username) :
+                    <input id="email_employe" name="email_employe" type="email" required>
+                </label>
 
-    <?php if ($message_erreur !== '') : ?>
-        <div class="alert alert-danger text-center"><?= htmlspecialchars($message_erreur) ?></div>
-    <?php endif; ?>
+                <label for="mdp_employe">Mot de passe :
+                    <input id="mdp_employe" name="mdp_employe" type="password" required>
+                </label>
+            </fieldset>
 
-    <!-- ========== CRÉER UN EMPLOYÉ ========== -->
-    <h2 class="mb-3">Créer un compte employé</h2>
-
-    <form method="post" action="espace-admin.php" class="formulaire-contact mb-5">
-        <fieldset>
-            <label for="email_employe">Email (username) :
-                <input id="email_employe" name="email_employe" type="email" required>
-            </label>
-
-            <label for="mdp_employe">Mot de passe :
-                <input id="mdp_employe" name="mdp_employe" type="password" required>
-            </label>
-        </fieldset>
-
-        <input type="hidden" name="creer_employe" value="1">
-        <input type="submit" value="Créer le compte" class="btn btn-dark">
-    </form>
+            <input type="hidden" name="creer_employe" value="1">
+            <input type="submit" value="Créer le compte" class="btn btn-dark">
+        </form>
 
     <!-- ========== LISTE DES EMPLOYÉS ========== -->
     <h2 class="mb-3">Employés</h2>
@@ -156,8 +198,34 @@ foreach ($stats as $s) {
 
     <canvas id="graphique-commandes" height="100"></canvas>
 
-    <!-- ========== CHIFFRE D'AFFAIRES ========== -->
+     <!-- ========== FILTRES CHIFFRE D'AFFAIRES ========== -->
     <h2 class="mt-5 mb-3">Chiffre d'affaires par menu</h2>
+
+    <form method="get" action="espace-admin.php" class="mb-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label for="filtre_menu">Menu :</label>
+                <select name="filtre_menu" id="filtre_menu" class="form-select">
+                    <option value="">Tous</option>
+                    <?php foreach ($stats as $s) : ?>
+                        <option value="<?= htmlspecialchars($s['titre']) ?>" <?= (isset($_GET['filtre_menu']) && $_GET['filtre_menu'] === $s['titre']) ? 'selected' : '' ?>><?= htmlspecialchars($s['titre']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="date_debut">Date début :</label>
+                <input type="date" name="date_debut" id="date_debut" class="form-control" value="<?= htmlspecialchars($_GET['date_debut'] ?? '') ?>">
+            </div>
+            <div class="col-md-3">
+                <label for="date_fin">Date fin :</label>
+                <input type="date" name="date_fin" id="date_fin" class="form-control" value="<?= htmlspecialchars($_GET['date_fin'] ?? '') ?>">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-dark">Filtrer</button>
+                <a href="espace-admin.php" class="btn btn-outline-dark">Réinitialiser</a>
+            </div>
+        </div>
+    </form>
 
     <?php if (empty($stats)) : ?>
         <p>Aucune donnée.</p>
@@ -175,29 +243,29 @@ foreach ($stats as $s) {
 
 </div>
 
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    var ctx = document.getElementById('graphique-commandes').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: <?= json_encode($labels) ?>,
-            datasets: [{
-                label: 'Nombre de commandes',
-                data: <?= json_encode($nbCommandes) ?>,
-                backgroundColor: ['#F5B800', '#432911', '#2C1A17', '#FFFDFA']
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        var ctx = document.getElementById('graphique-commandes').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: <?= json_encode($labels) ?>,
+                datasets: [{
+                    label: 'Nombre de commandes',
+                    data: <?= json_encode($nbCommandes) ?>,
+                    backgroundColor: ['#F5B800', '#432911', '#2C1A17', '#FFFDFA']
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
                 }
             }
-        }
-    });
-</script>
+        });
+    </script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

@@ -2,7 +2,7 @@
 $pageTitle = 'Détail du menu - Vite & Gourmand';
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/src/Database.php';
-require_once __DIR__ . '/src/Models/detail-menu.php';
+require_once __DIR__ . '/src/Models/Menu.php';
 
 // 1. Récupérer l'id depuis l'URL
 $menuId = isset($_GET['id']) ? (int)$_GET['id'] : 0;

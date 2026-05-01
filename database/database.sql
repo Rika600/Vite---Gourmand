@@ -693,4 +693,7 @@ INSERT INTO plat_allergene (plat_id, allergene_id) VALUES
 (12, 3),  -- Bûche → Œufs
 (12, 7);  -- Bûche → Lait
 
-
+-- Création de la colonne token_reset pour mot de passe oublié dans la table utilisateur
+ALTER TABLE utilisateur
+ADD COLUMN token_reset VARCHAR(255) DEFAULT NULL,
+ADD COLUMN token_expiration DATETIME DEFAULT NULL;

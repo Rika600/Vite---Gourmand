@@ -27,13 +27,21 @@
                     <li class="nav-item"><a class="nav-link text-white" href="/vite-gourmand/menus.php">MENU</a></li>
                     <li class="nav-item"><a class="nav-link text-white" href="/vite-gourmand/galerie.php">GALERIE</a></li>
                     <li class="nav-item"><a class="nav-link text-white" href="/vite-gourmand/livraison.php">LIVRAISON</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="/vite-gourmand/compte.php">COMPTE</a></li>
+                    <?php if (!isset($_SESSION['utilisateur_id'])) : ?>
+                        <li class="nav-item"><a class="nav-link text-white" href="/vite-gourmand/compte.php">COMPTE</a></li>
+                    <?php else : ?>
+                        <li class="nav-item"><a class="nav-link text-white" href="/vite-gourmand/espace-utilisateur.php">MON ESPACE</a></li>
+                        <?php if ($_SESSION['role_id'] == 2 || $_SESSION['role_id'] == 1) : ?>
+                            <li class="nav-item"><a class="nav-link text-white" href="/vite-gourmand/employe.php">EMPLOYÉ</a></li>
+                        <?php endif; ?>
+                        <?php if ($_SESSION['role_id'] == 1) : ?>
+                            <li class="nav-item"><a class="nav-link text-white" href="/vite-gourmand/espace-admin.php">ADMIN</a></li>
+                        <?php endif; ?>
+                    <?php endif; ?>
                     <li class="nav-item"><a class="nav-link text-white" href="/vite-gourmand/contact.php">CONTACT</a></li>
                     <?php if (isset($_SESSION['utilisateur_id'])) : ?>
-                    <li class="nav-item">
-                    <a class="nav-link text-white" href="/vite-gourmand/deconnexion.php">DÉCONNEXION</a>
-                    </li>
-                 <?php endif; ?>
+                        <li class="nav-item"><a class="nav-link text-white" href="/vite-gourmand/deconnexion.php">DÉCONNEXION</a></li>
+                    <?php endif; ?>
                 </ul>
             </div>
         </div>
