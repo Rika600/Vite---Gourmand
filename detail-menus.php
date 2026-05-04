@@ -96,7 +96,7 @@ $theme = $themes[0]['libelle'] ?? 'Menu';
 
         <!-- Bouton Commander (exigence ECF) -->
         <div class="text-center my-4">
-            <a href="/vite-gourmand/livraison.php?menu_id=<?= $menu['menu_id'] ?>" class="btn btn-dark px-5 py-2">
+            <a href="<?= BASE_URL ?>livraison.php?menu_id=<?= $menu['menu_id'] ?>" class="btn btn-dark px-5 py-2">
                 Commander ce menu
             </a>
         </div>

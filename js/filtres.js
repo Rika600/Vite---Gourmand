@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var prixMin = document.getElementById('filtre-prix-min').value;
         var personnes = document.getElementById('filtre-personnes').value;
 
-        var url = '/vite-gourmand/api/filtrer-menus.php?';
+        var url = '/api/filtrer-menus.php?';
         if (theme) url += 'theme=' + theme + '&';
         if (regime) url += 'regime=' + regime + '&';
         if (prixMax) url += 'prix_max=' + prixMax + '&';
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         html += '<div class="menu-card"><div class="menu-top">';
                         html += '<div class="menu-left"><div class="menu-image-wrapper">';
                         html += '<img src="' + m.image_principale + '" alt="' + m.titre + '" class="menu-image">';
-                        html += '<a href="/vite-gourmand/detail-menus.php?id=' + m.menu_id + '" class="menu-overlay">';
+                        html += '<a href="/detail-menus.php?id=' + m.menu_id + '" class="menu-overlay">';
                         html += '<span class="overlay-button">Voir le détail</span></a>';
                         html += '</div></div>';
                         html += '<div class="menu-infos">';
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         html += '<hr class="plat-line mb-5">';
                         html += '<p class="plat-nom">' + m.description + '</p>';
                         html += '<p class="prix">' + m.prix_personne + ' € par personne,<br>' + m.nombre_personnes_min + ' personnes minimum.</p>';
-                        html += '<a href="/vite-gourmand/detail-menus.php?id=' + m.menu_id + '" class="btn btn-dark">Voir le détail</a>';
+                        html += '<a href="/detail-menus.php?id=' + m.menu_id + '" class="btn btn-dark">Voir le détail</a>';
                         html += '</div></div></div></div>';
                     }
                 }

@@ -20,7 +20,7 @@ $menus = $menuModel->getAll();
             ?>
             <div class="col-md-6 mb-5">
                 <div class="text-center mt-4">
-                    <a href="/vite-gourmand/detail-menus.php?id=<?= $menu['menu_id'] ?>">
+                    <a href="<?= BASE_URL ?>detail-menus.php?id=<?= $menu['menu_id'] ?>">
                         <img src="<?= htmlspecialchars($menu['image_principale']) ?>" 
                              alt="<?= htmlspecialchars($menu['titre']) ?>"
                              class="img-fluid"

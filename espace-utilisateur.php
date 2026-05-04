@@ -6,7 +6,7 @@ require_once __DIR__ . '/src/Database.php';
 
 // Vérifier que l'utilisateur est connecté
 if (!isset($_SESSION['utilisateur_id'])) {
-    echo '<div class="container my-5"><div class="alert alert-warning text-center">Vous devez <a href="/vite-gourmand/compte.php">vous connecter</a> pour accéder à votre espace.</div></div>';
+    echo '<div class="container my-5"><div class="alert alert-warning text-center">Vous devez <a href="<?= BASE_URL ?>compte.php">vous connecter</a> pour accéder à votre espace.</div></div>';
     require_once __DIR__ . '/includes/footer.php';
     exit;
 }

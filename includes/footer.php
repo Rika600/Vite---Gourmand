@@ -9,15 +9,15 @@
         </div>
         <hr>
         <p>
-            <a href="/vite-gourmand/mentions-legales.php" class="text-white text-decoration-none">Mentions Légales</a>
+            <a href="<?= BASE_URL ?>mentions-legales.php" class="text-white text-decoration-none">Mentions Légales</a>
             |
-            <a href="/vite-gourmand/cgv.php" class="text-white text-decoration-none">Conditions Générales de Vente</a>
+            <a href="<?= BASE_URL ?>cgv.php" class="text-white text-decoration-none">Conditions Générales de Vente</a>
         </p>
         <p>&copy; <?= date('Y') ?> Vite & Gourmand - Tous droits réservés</p>
     </div>
 </footer>
 
-<script src="/vite-gourmand/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?= BASE_URL ?>node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

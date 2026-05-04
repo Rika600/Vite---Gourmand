@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             // Envoyer le mail
-            $lien = 'http://localhost:8080/vite-gourmand/reinitialiser-mdp.php?token=' . $token;
+            $lien = 'http://localhost:8080<?= BASE_URL ?>reinitialiser-mdp.php?token=' . $token;
             envoyerMail($email, 'Réinitialisation de votre mot de passe',
                 '<h2>Réinitialisation de mot de passe</h2>
                 <p>Bonjour ' . htmlspecialchars($utilisateur['prenom']) . ',</p>

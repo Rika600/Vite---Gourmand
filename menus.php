@@ -111,7 +111,7 @@ $regimes = $pdo->query("SELECT * FROM regime ORDER BY libelle")->fetchAll();
                             <img src="<?= htmlspecialchars($menu['image_principale']) ?>" 
                                  alt="<?= htmlspecialchars($menu['titre']) ?>"
                                  class="menu-image">
-                            <a href="/vite-gourmand/detail-menus.php?id=<?= $menu['menu_id'] ?>" class="menu-overlay">
+                            <a href="<?= BASE_URL ?>detail-menus.php?id=<?= $menu['menu_id'] ?>" class="menu-overlay">
                                 <span class="overlay-button">Voir le détail</span>
                             </a>
                         </div>
@@ -128,7 +128,7 @@ $regimes = $pdo->query("SELECT * FROM regime ORDER BY libelle")->fetchAll();
                             <?= $menu['nombre_personnes_min'] ?> personnes minimum.
                         </p>
 
-                        <a href="/vite-gourmand/detail-menus.php?id=<?= $menu['menu_id'] ?>" class="btn btn-dark">
+                        <a href="<?= BASE_URL ?>detail-menus.php?id=<?= $menu['menu_id'] ?>" class="btn btn-dark">
                             Voir le détail
                         </a>
                     </div>
@@ -141,6 +141,6 @@ $regimes = $pdo->query("SELECT * FROM regime ORDER BY libelle")->fetchAll();
     </div>
 </div>
 
-<script src="/vite-gourmand/js/filtres.js"></script>
+<script src="<?= BASE_URL ?>js/filtres.js"></script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

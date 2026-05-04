@@ -23,7 +23,7 @@ require_once 'includes/header.php';
         <h1>Vite & Gourmand</h1>
         <p>Traiteur depuis 25 ans</p>
         <div class="like-button">
-            <a href="/vite-gourmand/menus.php" class="btn btn-dark hero-button">Découvrir nos créations</a>
+            <a href="<?= BASE_URL ?>menus.php" class="btn btn-dark hero-button">Découvrir nos créations</a>
         </div>
     </div>
 </div>
@@ -49,7 +49,7 @@ require_once 'includes/header.php';
         </div>
         <div class="col-md-6 text-center">
             <img class="img-fluid rounded"
-                 src="/vite-gourmand/images/images/image équipe.jpg"
+                 src="<?= BASE_URL ?>images/images/image équipe.jpg"
                  alt="Équipe Vite & Gourmand"
                  style="max-height: 350px; object-fit: cover;">
         </div>

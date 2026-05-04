@@ -1,3 +1,4 @@
+SET NAMES utf8mb4;
 -- phpMyAdmin SQL Dump
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
@@ -465,7 +466,7 @@ FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (utilisateur_id),
 FOREIGN KEY (menu_id) REFERENCES menu(menu_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---Table suivant de changements de statut (historique)
+-- Table suivant de changements de statut (historique)
 CREATE TABLE suivi_commande (
   suivi_id INT AUTO_INCREMENT PRIMARY KEY,
   commande_id INT NOT NULL,
@@ -553,7 +554,7 @@ VALUES (
 
 -- 3. PLATS (12 plats : 4 entrées + 4 plats + 4 desserts)
 
---Entrées
+-- Entrées
 INSERT INTO plat (nom, type, description) VALUES
 ('Carpaccio de saumon, citron vert et aneth', 'entree', 'Saumon frais en fines tranches, citron vert et aneth frais'),
 ('Salade de melon, mozzarella et menthe fraîche', 'entree', 'Melon doux, mozzarella di bufala et menthe du jardin'),

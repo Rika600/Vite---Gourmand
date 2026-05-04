@@ -142,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['connexion'])) {
                 <input type="hidden" name="connexion" value="1">
                 <input type="submit" value="Se connecter" class="btn btn-dark">
                 <p class="text-center mt-3">
-                <a href="/vite-gourmand/mot-de-passe-oublie.php">Mot de passe oublié ?</a>
+                <a href="<?= BASE_URL ?>mot-de-passe-oublie.php">Mot de passe oublié ?</a>
                 </p>
             </form>
         </div>
