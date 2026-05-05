@@ -104,7 +104,7 @@ $regimes = $pdo->query("SELECT * FROM regime ORDER BY libelle")->fetchAll();
             <h2 class="text-center theme-titre"><?= htmlspecialchars($theme) ?></h2>
             <hr class="theme-line">
 
-            <div class="menu-card">
+            <div class="menu-card menu-liste">
                 <div class="menu-top">
                     <div class="menu-left">
                         <div class="menu-image-wrapper">

@@ -2,8 +2,8 @@
 
 
 .formulaire-contact {
-    width: 60%;
-    max-width: 500px;
+    width: 100%;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
@@ -34,4 +34,8 @@
     width: 60%;
     margin: 2rem auto;
     cursor: pointer;
-};
+}
+
+.formulaire-livraison .row {
+    gap: 60px !important;
+}

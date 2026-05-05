@@ -137,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     <?php else : ?>
 
-    <form method="post" action="livraison.php" class="formulaire-contact">
+    <form method="post" action="livraison.php" class="formulaire-contact formulaire-livraison">
         <div class="row">
 
             <!-- COLONNE GAUCHE : Formulaire -->
@@ -196,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </label>
 
                 <!-- Date et Heure côte à côte -->
-                <div class="row">
+                <div class="row g-5">
                     <div class="col-6">
                         <label for="date_livraison">Date de livraison :
                             <input id="date_livraison" name="date_livraison" type="text" placeholder="jj/mm/aaaa" required>
@@ -210,7 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <!-- Menu et Personnes côte à côte -->
-                <div class="row">
+                <div class="row g-5">
                     <div class="col-6">
                        <label for="menu_choisi">Menu choisi :
                     <select id="menu_choisi" name="menu_choisi" required>

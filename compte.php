@@ -96,7 +96,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['connexion'])) {
 
         if ($utilisateur && password_verify($mdp_co, $utilisateur['password'])) {
             // Connexion réussie → démarrer la session
-            session_start();
             $_SESSION['utilisateur_id'] = $utilisateur['utilisateur_id'];
             $_SESSION['nom'] = $utilisateur['nom'];
             $_SESSION['prenom'] = $utilisateur['prenom'];
