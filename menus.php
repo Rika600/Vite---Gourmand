@@ -30,8 +30,8 @@ $regimes = $pdo->query("SELECT * FROM regime ORDER BY libelle")->fetchAll();
     <!-- Panneau filtres déroulant (caché par défaut) -->
     <div id="filtres-panel" class="filtres-container mb-4" style="display: none;">
 
-      <div class="row g-3 flex-column" style="max-width: 250px;">
-            <div class="col-md-2">
+      <div class="row g-3">
+            <div class="col">
                 <label for="filtre-theme" class="form-label">Thème</label>
                 <select id="filtre-theme" class="form-select">
                     <option value="">Tous</option>
@@ -141,6 +141,7 @@ $regimes = $pdo->query("SELECT * FROM regime ORDER BY libelle")->fetchAll();
     </div>
 </div>
 
+<script>var BASE_URL = '<?= BASE_URL ?>';</script>
 <script src="<?= BASE_URL ?>js/filtres.js"></script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

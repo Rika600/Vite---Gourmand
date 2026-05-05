@@ -49,7 +49,7 @@ require_once 'includes/header.php';
         </div>
         <div class="col-md-6 text-center">
             <img class="img-fluid rounded"
-                 src="<?= BASE_URL ?>images/images/image équipe.jpg"
+                 src="<?= BASE_URL ?>images/image équipe.jpg"   
                  alt="Équipe Vite & Gourmand"
                  style="max-height: 350px; object-fit: cover;">
         </div>
