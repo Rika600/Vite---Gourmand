@@ -43,8 +43,17 @@ define('MAIL_USERNAME', 'votre_email@gmail.com');
 define('MAIL_PASSWORD', 'votre_mot_de_passe_application');
 ```
 
-# Lancer le projet
+
+
+##  Lancer le projet
+### Avec XAMPP
 1. Démarrer Apache et MySQL dans XAMPP
 2. Ouvrir le navigateur : `http://localhost:8080/vite-gourmand/`
+
+### Avec Docker
+1. Installer Docker Desktop
+2. Dans config.php, activer la configuration Docker (commenter XAMPP, décommenter Docker)
+3. Lancer : `docker-compose up --build`
+4. Ouvrir le navigateur : `http://localhost:8080/`
 
 # Déploiement
