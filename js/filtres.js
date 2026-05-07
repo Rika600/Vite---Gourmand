@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         html += '<div class="menu-wrapper">';
                         html += '<h2 class="text-center theme-titre">' + m.theme + '</h2>';
                         html += '<hr class="theme-line">';
-                        html += '<div class="menu-card"><div class="menu-top">';
+                        html += '<div class="menu-card menu-liste"><div class="menu-top">';
                         html += '<div class="menu-left"><div class="menu-image-wrapper">';
                         html += '<img src="' + m.image_principale + '" alt="' + m.titre + '" class="menu-image">';
                         html += '<a href="' + BASE_URL + 'detail-menus.php?id=' + m.menu_id + '" class="menu-overlay">';
