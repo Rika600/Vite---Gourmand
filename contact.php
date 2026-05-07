@@ -21,7 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Tout est bon
         $message_succes = 'Votre message a bien été envoyé. Nous vous répondrons rapidement.';
-        // Plus tard on ajoutera PHPMailer ici pour envoyer le mail
     }
 }
 ?>

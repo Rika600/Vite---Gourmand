@@ -10,6 +10,7 @@ Ce site est un site web de traiteur événementiel, permettant aux clients de co
 - Git
 - Extension PHP MongoDB
 - Un compte MongoDB Atlas
+- Docker
 
 # Installation 
 1. Cloner le projet :

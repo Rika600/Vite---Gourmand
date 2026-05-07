@@ -88,13 +88,13 @@ $theme = $themes[0]['libelle'] ?? 'Menu';
             </div>
         </div>
 
-        <!-- Conditions bien en évidence (exigence ECF) -->
+        <!-- Conditions bien en évidence -->
         <div class="menu-bas">
             <p class="mb-1"><strong>Conditions :</strong> <?= htmlspecialchars($menu['conditions_menu']) ?></p>
             <p class="mb-0"><strong>Stock restant :</strong> <?= $menu['stock_disponible'] ?> commandes disponibles</p>
         </div>
 
-        <!-- Bouton Commander (exigence ECF) -->
+        <!-- Bouton Commander -->
         <div class="text-center my-4">
             <a href="<?= BASE_URL ?>livraison.php?menu_id=<?= $menu['menu_id'] ?>" class="btn btn-dark px-5 py-2">
                 Commander ce menu
