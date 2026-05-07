@@ -8,6 +8,8 @@ RUN apt-get update \
 
 RUN a2enmod rewrite
 
+ENV LANG=C.UTF-8
+
 COPY . /var/www/html/
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
