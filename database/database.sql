@@ -273,6 +273,19 @@ VALUES (
     3
 );
 
+-- Client : Lucas Martin (role_id = 3)
+INSERT INTO utilisateur (email, password, nom, prenom, telephone, adresse_postale, ville, role_id)
+VALUES (
+    'lucas.martin@email.com',
+    '$2y$10$Kd0B/Gitg6/nXWPCG9jTeug2ka5soWJJF6drnTq6RGUqaUNWeRu26',
+    'Martin',
+    'Lucas',
+    '0645789123',
+    '25 Rue Saint-James',
+    'Bordeaux',
+    3
+);
+
 -- ==========================================================
 -- PLATS (12 plats : 4 entrées + 4 plats + 4 desserts)
 -- ==========================================================
@@ -432,7 +445,7 @@ ADD COLUMN token_reset VARCHAR(255) DEFAULT NULL,
 ADD COLUMN token_expiration DATETIME DEFAULT NULL;
 
 -- ==========================================================
--- COMMANDES TEST (4 commandes variées)
+-- COMMANDES TEST (5 commandes variées)
 -- Prix calculés selon la logique du code :
 --   prix_par_personne = prix_min / nombre_personnes_min
 --   prix_menu_total = prix_par_personne × nombre_personnes
@@ -459,6 +472,11 @@ VALUES ('CMD-20260415-3003', 4, 4, '2026-04-15 09:00:00', '2026-04-30', '19:00:0
 -- prix_par_personne = 1300/20 = 65€, total menu = 65×25 = 1625€, réduction = 162.50€, livraison = 13.85€, total = 1476.35€
 INSERT INTO commande (numero_commande, utilisateur_id, menu_id, date_commande, date_livraison, heure_livraison, adresse_livraison, ville_livraison, distance_km, nombre_personnes, prix_menu_unitaire, prix_menu_total, prix_livraison, reduction, prix_total, statut)
 VALUES ('CMD-20260420-4004', 4, 3, '2026-04-20 11:00:00', '2026-05-10', '12:30:00', '8 Boulevard du Maréchal Leclerc', 'Mérignac', 15.00, 25, 65.00, 1625.00, 13.85, 162.50, 1476.35, 'en_attente');
+
+-- Commande 5 : Lucas, Menu Classique, 12 pers, Bordeaux → pas de réduction, livraison gratuite
+-- prix_par_personne = 450/10 = 45€, total menu = 45×12 = 540€, total = 540€
+INSERT INTO commande (numero_commande, utilisateur_id, menu_id, date_commande, date_livraison, heure_livraison, adresse_livraison, ville_livraison, distance_km, nombre_personnes, prix_menu_unitaire, prix_menu_total, prix_livraison, reduction, prix_total, statut)
+VALUES ('CMD-20260325-5005', 5, 1, '2026-03-25 10:00:00', '2026-04-08', '12:00:00', '25 Rue Saint-James', 'Bordeaux', 0, 12, 45.00, 540.00, 0.00, 0.00, 540.00, 'terminee');
 
 -- ==========================================================
 -- SUIVI COMMANDES (historique des changements de statut)
@@ -496,13 +514,22 @@ INSERT INTO suivi_commande (commande_id, statut, date_changement, commentaire) V
 INSERT INTO suivi_commande (commande_id, statut, date_changement, commentaire) VALUES
 (4, 'en_attente', '2026-04-20 11:00:00', 'Commande reçue');
 
+-- Suivi commande 5 (terminée)
+INSERT INTO suivi_commande (commande_id, statut, date_changement, commentaire) VALUES
+(5, 'en_attente', '2026-03-25 10:00:00', 'Commande reçue'),
+(5, 'accepte', '2026-03-26 09:00:00', 'Commande validée'),
+(5, 'en_preparation', '2026-04-07 08:00:00', 'Préparation en cours'),
+(5, 'en_cours_livraison', '2026-04-08 11:00:00', 'Livraison en route'),
+(5, 'livre', '2026-04-08 12:20:00', 'Livré'),
+(5, 'terminee', '2026-04-11 10:00:00', 'Commande terminée');
+
 -- ==========================================================
--- AVIS TEST (3 avis validés + 1 en attente)
+-- AVIS TEST (3 avis validés — 1 par personne)
 -- ==========================================================
 
--- Avis 1 : Marie sur commande 1 (validé) → affiché sur la page d'accueil
+-- Avis 1 : Lucas sur commande 5 (validé) → affiché sur la page d'accueil
 INSERT INTO avis (commande_id, utilisateur_id, note, commentaire, statut_validation, date_validation)
-VALUES (1, 3, 5, 'Service impeccable ! Le menu Classique Gourmand était délicieux, tous nos invités ont adoré. Livraison ponctuelle et équipe très professionnelle.', 'valide', '2026-03-20 10:00:00');
+VALUES (5, 5, 5, 'Excellent menu Classique pour notre repas de famille. Tout était parfait du début à la fin. Je recommande vivement !', 'valide', '2026-04-15 10:00:00');
 
 -- Avis 2 : Marie sur commande 2 (validé) → affiché sur la page d'accueil
 INSERT INTO avis (commande_id, utilisateur_id, note, commentaire, statut_validation, date_validation)
