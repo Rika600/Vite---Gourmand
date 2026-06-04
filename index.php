@@ -1,14 +1,14 @@
 <?php
 // 1. Charger les classes nécessaires
 require_once 'src/Database.php';
-require_once 'src/Models/Avis.php';
+require_once 'src/Services/AvisService.php';
 
 // 2. Récupérer la connexion PDO via la classe Database (Singleton)
 $pdo = Database::getConnection();
 
 // 3. Créer un objet Avis et récupérer les avis validés
-$avisModel = new Avis($pdo);
-$avis = $avisModel->getAvisValides(3);
+$avisService = new AvisService($pdo);
+$avis = $avisService->getAvisAccueil(3);
 
 // 4. Titre de la page
 $pageTitle = 'Accueil - Vite & Gourmand';
@@ -68,11 +68,11 @@ require_once 'includes/header.php';
                 <div class="col-md-4 mb-3">
                     <div class="card p-3 text-center">
                         <p class="text-warning">
-                            <?= str_repeat('★', $a['note']) . str_repeat('☆', 5 - $a['note']) ?>
+                            <?= $avisService->genererEtoiles($a->getNote()) ?>
                         </p>
-                        <p><?= htmlspecialchars($a['commentaire']) ?></p>
+                        <p><?= htmlspecialchars($a->getCommentaire()) ?></p>
                         <p class="fw-bold">
-                            - <?= htmlspecialchars($a['prenom']) ?> <?= htmlspecialchars(substr($a['nom'], 0, 1)) ?>.
+                            - <?= htmlspecialchars($a->getPrenom()) ?> <?= htmlspecialchars($a->getInitialeNom()) ?>.
                         </p>
                     </div>
                 </div>
