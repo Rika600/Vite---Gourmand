@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../src/Database.php';
-require_once __DIR__ . '/../src/Models/Menu.php';
+require_once __DIR__ . '/../src/Services/MenuService.php';
 
 header('Content-Type: application/json');
 
@@ -54,12 +54,12 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $menus = $stmt->fetchAll();
 
-$menuModel = new Menu($pdo);
+$menuService = new MenuService($pdo);
 $result = [];
 
 foreach ($menus as $menu) {
-    $themes = $menuModel->getThemes($menu['menu_id']);
-    $menu['theme'] = $themes[0]['libelle'] ?? 'Menu';
+    $themes = $menuService->getThemes($menu['menu_id']);
+    $menu['theme'] = isset($themes[0]) ? $themes[0]->getLibelle() : 'Menu';
     $menu['prix_personne'] = number_format($menu['prix_min'] / $menu['nombre_personnes_min'], 2, ',', ' ');
     $result[] = $menu;
 }
