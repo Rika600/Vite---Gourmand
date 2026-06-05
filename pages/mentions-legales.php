@@ -1,6 +1,6 @@
 <?php
 $pageTitle = 'Mentions Légales - Vite & Gourmand';
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="container my-5">
@@ -26,4 +26,4 @@ require_once __DIR__ . '/includes/header.php';
     <p>Les données personnelles collectées sur ce site sont utilisées uniquement pour le traitement des commandes et la communication avec nos clients. Conformément au RGPD, vous disposez d'un droit d'accès, de modification et de suppression de vos données. Pour exercer ce droit, contactez-nous à contact@vite-gourmand.fr.</p>
 </div>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

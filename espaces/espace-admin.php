@@ -1,110 +1,96 @@
 <?php
 session_start();
 $pageTitle = 'Espace Admin - Vite & Gourmand';
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/src/Database.php';
-require_once __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/mailer.php';
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../src/Database.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../src/mailer.php';
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../src/Services/UtilisateurService.php';
 
-    // Vérifier que c'est un admin (role_id = 1)
-    if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
-        echo '<div class="container my-5"><div class="alert alert-warning text-center">Accès réservé à l\'administrateur.</div></div>';
-        require_once __DIR__ . '/includes/footer.php';
-        exit;
-    }
+// Vérifier que c'est un admin (role_id = 1)
+if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
+    echo '<div class="container my-5"><div class="alert alert-warning text-center">Accès réservé à l\'administrateur.</div></div>';
+    require_once __DIR__ . '/../includes/footer.php';
+    exit;
+}
 
 $pdo = Database::getConnection();
+$utilisateurService = new UtilisateurService($pdo);
 
 $message_succes = '';
 $message_erreur = '';
 
-    // ========== CRÉER UN EMPLOYÉ ==========
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['creer_employe'])) {
-        $email = trim($_POST['email_employe'] ?? '');
-        $mdp = $_POST['mdp_employe'] ?? '';
+// ========== CRÉER UN EMPLOYÉ ==========
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['creer_employe'])) {
+    $email = trim($_POST['email_employe'] ?? '');
+    $mdp = $_POST['mdp_employe'] ?? '';
 
-        if ($email === '' || $mdp === '') {
-            $message_erreur = 'Email et mot de passe obligatoires.';
-        } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $message_erreur = 'Email invalide.';
-        } else {
-            // Vérifier si l'email existe déjà
-            $stmt = $pdo->prepare("SELECT utilisateur_id FROM utilisateur WHERE email = :email");
-            $stmt->execute([':email' => $email]);
+    if ($email === '' || $mdp === '') {
+        $message_erreur = 'Email et mot de passe obligatoires.';
+    } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $message_erreur = 'Email invalide.';
+    } else {
+        $result = $utilisateurService->creerEmploye($email, $mdp);
 
-            if ($stmt->fetch()) {
-                $message_erreur = 'Cette adresse email est déjà utilisée.';
-            } else {
-                $hash = password_hash($mdp, PASSWORD_BCRYPT);
-                $sql = "INSERT INTO utilisateur (email, password, nom, prenom, telephone, adresse_postale, ville, role_id) 
-                        VALUES (:email, :password, '', '', '', '', '', 2)";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([
-                    ':email' => $email,
-                    ':password' => $hash
-                ]);
-
-            // Envoyer mail au nouvel employé
+        if ($result['success']) {
             envoyerMail($email, 'Votre compte employé - Vite & Gourmand',
-            '<h2>Bienvenue dans l\'équipe !</h2>
-            <p>Un compte employé a été créé pour vous sur Vite & Gourmand.</p>
-            <p>Votre indentifiant : <strong>' . htmlspecialchars($email) . '</strong></p>)
-            <p>Votre mot de passe : <strong>' . htmlspecialchars($mdp) . '</strong></p>)
-            <p>Nous vous conseillons de changer votre mot de passe après votre première connexion.</p>
-            <p>L\'équipe Vite & Gourmand</p>'
+                '<h2>Bienvenue dans l\'équipe !</h2>
+                <p>Un compte employé a été créé pour vous sur Vite & Gourmand.</p>
+                <p>Votre identifiant : <strong>' . htmlspecialchars($email) . '</strong></p>
+                <p>Votre mot de passe : <strong>' . htmlspecialchars($mdp) . '</strong></p>
+                <p>Nous vous conseillons de changer votre mot de passe après votre première connexion.</p>
+                <p>L\'équipe Vite & Gourmand</p>'
             );
             $message_succes = 'Compte employé créé pour ' . htmlspecialchars($email) . '.';
+        } else {
+            $message_erreur = $result['erreur'];
         }
     }
 }
 
-    // ========== DÉSACTIVER UN EMPLOYÉ ==========
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['desactiver_employe'])) {
-        $employeId = (int)$_POST['employe_id'];
-        $stmt = $pdo->prepare("UPDATE utilisateur SET actif = 0 WHERE utilisateur_id = :id AND role_id = 2");
-        $stmt->execute([':id' => $employeId]);
-        $message_succes = 'Compte employé désactivé.';
+// ========== DÉSACTIVER UN EMPLOYÉ ==========
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['desactiver_employe'])) {
+    $employeId = (int)$_POST['employe_id'];
+    $utilisateurService->desactiverEmploye($employeId);
+    $message_succes = 'Compte employé désactivé.';
+}
+
+// ========== RÉACTIVER UN EMPLOYÉ ==========
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reactiver_employe'])) {
+    $employeId = (int)$_POST['employe_id'];
+    $utilisateurService->reactiverEmploye($employeId);
+    $message_succes = 'Compte employé réactivé.';
+}
+
+// Récupérer les employés
+$employes = $utilisateurService->getEmployes();
+
+// Récupérer les stats commandes depuis MongoDB
+$client = new MongoDB\Client(MONGODB_URI);
+$db = $client->vite_gourmand;
+$collection = $db->stats_commandes;
+$stats = $collection->find([], ['sort' => ['menu_id' => 1]]);
+$stats = iterator_to_array($stats);
+
+// Appliquer les filtres CA
+$filtre_menu = $_GET['filtre_menu'] ?? '';
+$date_debut = $_GET['date_debut'] ?? '';
+$date_fin = $_GET['date_fin'] ?? '';
+
+if ($filtre_menu !== '' || $date_debut !== '' || $date_fin !== '') {
+    if ($filtre_menu !== '') {
+        $stats = array_filter($stats, function($s) use ($filtre_menu) {
+            return $s['titre'] === $filtre_menu;
+        });
     }
 
-    // ========== RÉACTIVER UN EMPLOYÉ ==========
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reactiver_employe'])) {
-        $employeId = (int)$_POST['employe_id'];
-        $stmt = $pdo->prepare("UPDATE utilisateur SET actif = 1 WHERE utilisateur_id = :id AND role_id = 2");
-        $stmt->execute([':id' => $employeId]);
-        $message_succes = 'Compte employé réactivé.';
-    }
-
-    // Récupérer les employés
-    $employes = $pdo->query("SELECT * FROM utilisateur WHERE role_id = 2 ORDER BY email")->fetchAll();
-
-    // Récupérer les stats commandes depuis MongoDB
-    $client = new MongoDB\Client(MONGODB_URI);
-    $db = $client->vite_gourmand;
-    $collection =$db->stats_commandes;
-    $stats = $collection->find([], ['sort' => ['menu_id' => 1]]);
-    $stats = iterator_to_array($stats);
-
-    // Appliquer les filtres CA
-    $filtre_menu = $_GET['filtre_menu'] ?? '';
-    $date_debut = $_GET['date_debut'] ?? '';
-    $date_fin = $_GET['date_fin'] ?? '';
-
-    if ($filtre_menu !== '' || $date_debut !== '' || $date_fin !== '') {
-        // Si filtre par menu
-        if ($filtre_menu !== '') {
-            $stats = array_filter($stats, function($s) use ($filtre_menu) {
-                return $s['titre'] === $filtre_menu;
-            });
-        }
-    
-    // Si filtre par date, recalculer depuis MySQL
     if ($date_debut !== '' || $date_fin !== '') {
         $sqlFiltre = "SELECT m.titre, COUNT(c.commande_id) AS nb_commandes, COALESCE(SUM(c.prix_total), 0) AS chiffre_affaires
             FROM menu m
             LEFT JOIN commande c ON m.menu_id = c.menu_id AND c.statut != 'annulee'";
         $paramsFiltre = [];
-        
+
         if ($date_debut !== '') {
             $sqlFiltre .= " AND c.date_commande >= :debut";
             $paramsFiltre[':debut'] = $date_debut;
@@ -113,12 +99,12 @@ $message_erreur = '';
             $sqlFiltre .= " AND c.date_commande <= :fin";
             $paramsFiltre[':fin'] = $date_fin . ' 23:59:59';
         }
-        
+
         $sqlFiltre .= " GROUP BY m.menu_id, m.titre ORDER BY m.menu_id";
         $stmt = $pdo->prepare($sqlFiltre);
         $stmt->execute($paramsFiltre);
         $stats = $stmt->fetchAll();
-        
+
         if ($filtre_menu !== '') {
             $stats = array_filter($stats, function($s) use ($filtre_menu) {
                 return $s['titre'] === $filtre_menu;
@@ -127,16 +113,16 @@ $message_erreur = '';
     }
 }
 
-    // Préparer les données pour Chart.js
-    $labels = [];
-    $nbCommandes = [];
-    $ca = [];
-    foreach ($stats as $s) {
-        $labels[] = $s['titre'];
-        $nbCommandes[] = (int)$s['nb_commandes'];
-        $ca[] = (float)$s['chiffre_affaires'];
-    }
-    ?>
+// Préparer les données pour Chart.js
+$labels = [];
+$nbCommandes = [];
+$ca = [];
+foreach ($stats as $s) {
+    $labels[] = $s['titre'];
+    $nbCommandes[] = (int)$s['nb_commandes'];
+    $ca[] = (float)$s['chiffre_affaires'];
+}
+?>
 
     <div class="container my-5">
         <h1 class="text-center mb-5">Espace Administrateur</h1>
@@ -176,12 +162,12 @@ $message_erreur = '';
         <?php foreach ($employes as $emp) : ?>
             <div class="card mb-2 p-3">
                 <p>
-                    <strong><?= htmlspecialchars($emp['email']) ?></strong>
-                    — <?= $emp['actif'] ? 'Actif' : 'Désactivé' ?>
+                    <strong><?= htmlspecialchars($emp->getEmail()) ?></strong>
+                    <?= $emp->isActif() ? 'Actif' : 'Désactivé' ?>
                 </p>
                 <form method="post" action="espace-admin.php" style="display: inline;">
-                    <input type="hidden" name="employe_id" value="<?= $emp['utilisateur_id'] ?>">
-                    <?php if ($emp['actif']) : ?>
+                    <input type="hidden" name="employe_id" value="<?= $emp->getId() ?>">
+                    <?php if ($emp->isActif()) : ?>
                         <input type="hidden" name="desactiver_employe" value="1">
                         <button type="submit" class="btn btn-outline-dark btn-sm">Désactiver</button>
                     <?php else : ?>
@@ -233,7 +219,7 @@ $message_erreur = '';
         <?php foreach ($stats as $s) : ?>
             <div class="card mb-2 p-3">
                 <p>
-                    <strong><?= htmlspecialchars($s['titre']) ?></strong>
+                    <strong><?= htmlspecialchars($s['Titre']) ?></strong>
                     — <?= $s['nb_commandes'] ?> commande(s)
                     — CA : <?= number_format($s['chiffre_affaires'] ?? 0, 2, ',', ' ') ?> €
                 </p>
@@ -268,4 +254,4 @@ $message_erreur = '';
         });
     </script>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

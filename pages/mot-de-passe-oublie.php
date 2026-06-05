@@ -1,11 +1,13 @@
 <?php
 session_start();
 $pageTitle = 'Mot de passe oublié - Vite & Gourmand';
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/src/Database.php';
-require_once __DIR__ . '/mailer.php';
+require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../src/Database.php';
+require_once __DIR__ . '/../src/mailer.php';
+require_once __DIR__ . '/../src/Services/UtilisateurService.php';
 
 $pdo = Database::getConnection();
+$utilisateurService = new UtilisateurService($pdo);
 $message_succes = '';
 $message_erreur = '';
 
@@ -15,31 +17,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($email === '') {
         $message_erreur = 'Veuillez entrer votre adresse email.';
     } else {
-        // Vérifier si l'email existe
-        $sql = "SELECT utilisateur_id, prenom FROM utilisateur WHERE email = :email";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([':email' => $email]);
-        $utilisateur = $stmt->fetch();
+        $token = $utilisateurService->demanderResetPassword($email);
 
+        $utilisateur = $utilisateurService->getUtilisateurParEmail($email);
         if ($utilisateur) {
-            // Générer un token unique
-            $token = bin2hex(random_bytes(32));
-            $expiration = date('Y-m-d H:i:s', strtotime('+1 hour'));
-
-            // Stocker le token dans la base
-            $sql = "UPDATE utilisateur SET token_reset = :token, token_expiration = :expiration WHERE email = :email";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                ':token' => $token,
-                ':expiration' => $expiration,
-                ':email' => $email
-            ]);
-
-            // Envoyer le mail
-            $lien = 'http://localhost:8080<?= BASE_URL ?>reinitialiser-mdp.php?token=' . $token;
+            $lien = 'http://localhost:8080' . BASE_URL . 'pages/reinitialiser-mdp.php?token=' . $token;
             envoyerMail($email, 'Réinitialisation de votre mot de passe',
                 '<h2>Réinitialisation de mot de passe</h2>
-                <p>Bonjour ' . htmlspecialchars($utilisateur['prenom']) . ',</p>
+                <p>Bonjour ' . htmlspecialchars($utilisateur->getPrenom()) . ',</p>
                 <p>Vous avez demandé à réinitialiser votre mot de passe.</p>
                 <p>Cliquez sur le lien ci-dessous (valable 1 heure) :</p>
                 <p><a href="' . $lien . '">Réinitialiser mon mot de passe</a></p>
@@ -48,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
         }
 
-        // Message identique que l'email existe ou non (sécurité)
         $message_succes = 'Si cette adresse existe dans notre base, un email de réinitialisation a été envoyé.';
     }
 }
@@ -75,4 +59,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
 </div>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

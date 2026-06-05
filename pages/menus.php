@@ -1,16 +1,17 @@
 <?php
 $pageTitle = 'Nos Menus - Vite & Gourmand';
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/src/Database.php';
-require_once __DIR__ . '/src/Models/Menu.php';
+require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../src/Database.php';
+require_once __DIR__ . '/../src/Services/MenuService.php';
 
 $pdo = Database::getConnection();
-$menuModel = new Menu($pdo);
-$menus = $menuModel->getAll();
+$menuService = new MenuService($pdo);
+$menus = $menuService->getMenusActifs();
 
 // Récupérer les thèmes et régimes pour les filtres
-$themes = $pdo->query("SELECT * FROM theme ORDER BY libelle")->fetchAll();
-$regimes = $pdo->query("SELECT * FROM regime ORDER BY libelle")->fetchAll();
+$filtres = $menuService->getFiltresData();
+$themes = $filtres['themes'];
+$regimes = $filtres['regimes'];
 ?>
 
 
@@ -36,7 +37,7 @@ $regimes = $pdo->query("SELECT * FROM regime ORDER BY libelle")->fetchAll();
                 <select id="filtre-theme" class="form-select">
                     <option value="">Tous</option>
                     <?php foreach ($themes as $t) : ?>
-                        <option value="<?= $t['theme_id'] ?>"><?= htmlspecialchars($t['libelle']) ?></option>
+                        <option value="<?= $t->getId() ?>"><?= htmlspecialchars($t->getLibelle()) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -46,7 +47,7 @@ $regimes = $pdo->query("SELECT * FROM regime ORDER BY libelle")->fetchAll();
                 <select id="filtre-regime" class="form-select">
                     <option value="">Tous</option>
                     <?php foreach ($regimes as $r) : ?>
-                        <option value="<?= $r['regime_id'] ?>"><?= htmlspecialchars($r['libelle']) ?></option>
+                        <option value="<?= $r->getId() ?>"><?= htmlspecialchars($r->getLibelle()) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -96,8 +97,8 @@ $regimes = $pdo->query("SELECT * FROM regime ORDER BY libelle")->fetchAll();
 
     <?php foreach ($menus as $menu) : ?>
         <?php
-        $themesMenu = $menuModel->getThemes($menu['menu_id']);
-        $theme = $themesMenu[0]['libelle'] ?? 'Menu';
+        $themesMenu = $menuService->getThemes($menu->getId());
+        $theme = isset($themesMenu[0]) ? $themesMenu[0]->getLibelle() : 'Menu';
         ?>
 
         <div class="menu-wrapper">
@@ -108,27 +109,27 @@ $regimes = $pdo->query("SELECT * FROM regime ORDER BY libelle")->fetchAll();
                 <div class="menu-top">
                     <div class="menu-left">
                         <div class="menu-image-wrapper">
-                            <img src="<?= htmlspecialchars($menu['image_principale']) ?>" 
-                                 alt="<?= htmlspecialchars($menu['titre']) ?>"
+                          <img src="<?= BASE_URL ?><?= htmlspecialchars($menu->getImage()) ?>"
+                                 alt="<?= htmlspecialchars($menu->getTitre()) ?>"
                                  class="menu-image">
-                            <a href="<?= BASE_URL ?>detail-menus.php?id=<?= $menu['menu_id'] ?>" class="menu-overlay">
+                            <a href="<?= BASE_URL ?>pages/detail-menus.php?id=<?= $menu->getId() ?>" class="menu-overlay">
                                 <span class="overlay-button">Voir le détail</span>
                             </a>
                         </div>
                     </div>
 
                     <div class="menu-infos">
-                        <h3 class="menu-titre"><?= htmlspecialchars($menu['titre']) ?></h3>
+                        <h3 class="menu-titre"><?= htmlspecialchars($menu->getTitre()) ?></h3>
                         <hr class="plat-line mb-5">
 
-                        <p class="plat-nom"><?= htmlspecialchars($menu['description']) ?></p>
+                        <p class="plat-nom"><?= htmlspecialchars($menu->getDescription) ?></p>
 
                         <p class="prix">
-                            <?= number_format($menu['prix_min'] / $menu['nombre_personnes_min'], 2, ',', ' ') ?> € par personne,<br>
-                            <?= $menu['nombre_personnes_min'] ?> personnes minimum.
+                            <?= number_format($menu->getPrix() / $menu->getNbPersonnesMin(), 2, ',', ' ') ?> € par personne,<br>
+                            <?= $menu->getNbPersonnesMin() ?> personnes minimum.
                         </p>
 
-                        <a href="<?= BASE_URL ?>detail-menus.php?id=<?= $menu['menu_id'] ?>" class="btn btn-dark">
+                        <a href="<?= BASE_URL ?>pages/detail-menus.php?id=<?= $menu->getId() ?>" class="btn btn-dark">
                             Voir le détail
                         </a>
                     </div>
@@ -144,4 +145,4 @@ $regimes = $pdo->query("SELECT * FROM regime ORDER BY libelle")->fetchAll();
 <script>var BASE_URL = '<?= BASE_URL ?>';</script>
 <script src="<?= BASE_URL ?>js/filtres.js"></script>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

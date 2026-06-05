@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         html += '<hr class="theme-line">';
                         html += '<div class="menu-card menu-liste"><div class="menu-top">';
                         html += '<div class="menu-left"><div class="menu-image-wrapper">';
-                        html += '<img src="' + m.image_principale + '" alt="' + m.titre + '" class="menu-image">';
-                        html += '<a href="' + BASE_URL + 'detail-menus.php?id=' + m.menu_id + '" class="menu-overlay">';
+                        html += '<img src="' + BASE_URL + m.image_principale + '" alt="' + m.titre + '" class="menu-image">';
+                        html += '<a href="' + BASE_URL + 'pages/detail-menus.php?id=' + m.menu_id + '" class="menu-overlay">';
                         html += '<span class="overlay-button">Voir le détail</span></a>';
                         html += '</div></div>';
                         html += '<div class="menu-infos">';
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         html += '<hr class="plat-line mb-5">';
                         html += '<p class="plat-nom">' + m.description + '</p>';
                         html += '<p class="prix">' + m.prix_personne + ' € par personne,<br>' + m.nombre_personnes_min + ' personnes minimum.</p>';
-                        html += '<a href="' + BASE_URL + 'detail-menus.php?id=' + m.menu_id + '" class="btn btn-dark">Voir le détail</a>';
+                        html += '<a href="' + BASE_URL + 'pages/detail-menus.php?id=' + m.menu_id + '" class="btn btn-dark">Voir le détail</a>';
                         html += '</div></div></div></div>';
                     }
                 }

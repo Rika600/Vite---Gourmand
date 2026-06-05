@@ -1,10 +1,12 @@
 <?php
 session_start();
 $pageTitle = 'Réinitialiser le mot de passe - Vite & Gourmand';
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/src/Database.php';
+require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../src/Database.php';
+require_once __DIR__ . '/../src/Services/UtilisateurService.php';
 
 $pdo = Database::getConnection();
+$utilisateurService = new UtilisateurService($pdo);
 $message_succes = '';
 $message_erreur = '';
 $token_valide = false;
@@ -12,12 +14,7 @@ $token_valide = false;
 $token = $_GET['token'] ?? '';
 
 if ($token !== '') {
-    // Vérifier si le token existe et n'est pas expiré
-    $sql = "SELECT utilisateur_id FROM utilisateur WHERE token_reset = :token AND token_expiration > NOW()";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([':token' => $token]);
-    $utilisateur = $stmt->fetch();
-
+    $utilisateur = $utilisateurService->verifierToken($token);
     if ($utilisateur) {
         $token_valide = true;
     } else {
@@ -39,29 +36,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else if ($mdp !== $mdp_confirm) {
         $message_erreur = 'Les mots de passe ne correspondent pas.';
         $token_valide = true;
-    } else if (strlen($mdp) < 8) {
-        $message_erreur = 'Le mot de passe doit contenir au moins 8 caractères.';
-        $token_valide = true;
     } else {
-        // Vérifier le token encore une fois
-        $sql = "SELECT utilisateur_id FROM utilisateur WHERE token_reset = :token AND token_expiration > NOW()";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([':token' => $token]);
-        $utilisateur = $stmt->fetch();
+        $result = $utilisateurService->resetPassword($token, $mdp);
 
-        if ($utilisateur) {
-            // Mettre à jour le mot de passe
-            $hash = password_hash($mdp, PASSWORD_BCRYPT);
-            $sql = "UPDATE utilisateur SET password = :mdp, token_reset = NULL, token_expiration = NULL WHERE utilisateur_id = :id";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                ':mdp' => $hash,
-                ':id' => $utilisateur['utilisateur_id']
-            ]);
+        if ($result['success']) {
             $message_succes = 'Votre mot de passe a été réinitialisé. Vous pouvez vous connecter.';
             $token_valide = false;
         } else {
-            $message_erreur = 'Ce lien est invalide ou a expiré.';
+            $message_erreur = $result['erreur'];
+            $token_valide = true;
         }
     }
 }
@@ -73,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php if ($message_succes !== '') : ?>
         <div class="alert alert-success text-center">
             <?= htmlspecialchars($message_succes) ?>
-            <br><a href="compte.php">Se connecter</a>
+            <br><a href="<?= BASE_URL ?>pages/compte.php">Se connecter</a>
         </div>
     <?php endif; ?>
 
@@ -97,4 +80,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 </div>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

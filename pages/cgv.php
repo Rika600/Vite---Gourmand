@@ -1,6 +1,6 @@
 <?php
 $pageTitle = 'CGV - Vite & Gourmand';
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="container my-5">
@@ -28,4 +28,4 @@ require_once __DIR__ . '/includes/header.php';
     <p>Les présentes conditions sont soumises au droit français. En cas de litige, les tribunaux de Bordeaux seront compétents.</p>
 </div>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

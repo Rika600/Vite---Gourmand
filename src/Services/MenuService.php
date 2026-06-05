@@ -41,16 +41,20 @@ class MenuService
 
     public function formaterAllergenes(array $allergenes): string
     {
-        return implode(', ', array_column($allergenes, 'libelle'));
+        $noms = [];
+        foreach ($allergenes as $a) {
+            $noms[] = $a->getLibelle();
+        }
+        return implode(', ', $noms);
     }
 
     public function separerPlatsParType(array $plats): array
     {
         $result = ['entree' => null, 'plat' => null, 'dessert' => null];
         foreach ($plats as $p) {
-            $type = $p['type'] ?? '';
+            $type = $p->getType() ?? '';
             if (isset($result[$type])) {
-                $result[$type] = $p['nom'];
+                $result[$type] = $p->getNom();
             }
         }
         return $result;
@@ -59,5 +63,10 @@ class MenuService
     public function desactiverMenu(int $menuId): void
     {
         $this->menuRepository->desactiver($menuId);
+    }
+
+    public function getThemes(int $menuId) : array
+    {
+        return  $this->menuRepository->findThemes($menuId);
     }
 }

@@ -1,18 +1,24 @@
 <?php
 session_start();
 $pageTitle = 'Espace Employé - Vite & Gourmand';
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/src/Database.php';
-require_once __DIR__ . '/mailer.php';
+require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../src/Database.php';
+require_once __DIR__ . '/../src/mailer.php';
+require_once __DIR__ . '/../src/Services/CommandeService.php';
+require_once __DIR__ . '/../src/Services/MenuService.php';
+require_once __DIR__ . '/../src/Services/AvisService.php';
 
 // Vérifier que c'est un employé ou admin (role_id 1 ou 2)
 if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] != 1 && $_SESSION['role_id'] != 2)) {
     echo '<div class="container my-5"><div class="alert alert-warning text-center">Accès réservé aux employés.</div></div>';
-    require_once __DIR__ . '/includes/footer.php';
+    require_once __DIR__ . '/../includes/footer.php';
     exit;
 }
 
 $pdo = Database::getConnection();
+$commandeService = new CommandeService($pdo);
+$menuService = new MenuService($pdo);
+$avisService = new AvisService($pdo);
 
 $message_succes = '';
 $message_erreur = '';
@@ -24,41 +30,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changer_statut'])) {
     $motif = trim($_POST['motif'] ?? '');
     $modeContact = $_POST['mode_contact'] ?? '';
 
-    // Si annulation, motif obligatoire
     if ($nouveauStatut === 'annulee' && ($motif === '' || $modeContact === '')) {
         $message_erreur = 'Motif et mode de contact obligatoires pour une annulation.';
     } else {
-        $sql = "UPDATE commande SET statut = :statut";
-        $params = [':statut' => $nouveauStatut, ':id' => $commandeId];
-
-        if ($nouveauStatut === 'annulee') {
-            $sql .= ", motif_annulation = :motif, mode_contact_annulation = :mode";
-            $params[':motif'] = $motif;
-            $params[':mode'] = $modeContact;
-        }
-
-        $sql .= " WHERE commande_id = :id";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-
-        // Ajouter au suivi
-        $stmt = $pdo->prepare("INSERT INTO suivi_commande (commande_id, statut) VALUES (:id, :statut)");
-        $stmt->execute([':id' => $commandeId, ':statut' => $nouveauStatut]);
+        $commandeService->changerStatut($commandeId, $nouveauStatut, $motif, $modeContact);
 
         // Si commande terminée, envoyer mail pour donner un avis
         if ($nouveauStatut === 'terminee') {
-            $stmt = $pdo->prepare("SELECT u.email, u.prenom, c.numero_commande FROM commande c JOIN utilisateur u ON c.utilisateur_id WHERE c.commande_id = :id");
-            $stmt->execute([':id' => $commandeId]);
-            $infos = $stmt->fetch();
-            if($infos) {
+            $infos = $commandeService->getInfosClientCommande($commandeId);
+            if ($infos) {
                 envoyerMail($infos['email'], 'Donnez votre avis - Vite & Gourmand',
-                '<h2>Votre commande est terminée !</h2>
-                 <p>Bonjour ' . htmlspecialchars($infos['prenom']) . ',</p>
+                    '<h2>Votre commande est terminée !</h2>
+                    <p>Bonjour ' . htmlspecialchars($infos['prenom']) . ',</p>
                     <p>Votre commande <strong>' . htmlspecialchars($infos['numero_commande']) . '</strong> est terminée.</p>
                     <p>Nous espérons que vous avez apprécié notre prestation !</p>
                     <p>N\'hésitez pas à nous laisser un avis depuis votre espace client.</p>
                     <p>L\'équipe Vite & Gourmand</p>'
-                 );
+                );
             }
         }
 
@@ -66,65 +54,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changer_statut'])) {
     }
 }
 
-    // ========== VALIDER/REFUSER AVIS ==========
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['gerer_avis'])) {
-        $avisId = (int)$_POST['avis_id'];
-        $decision = $_POST['decision'];
+// ========== VALIDER/REFUSER AVIS ==========
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['gerer_avis'])) {
+    $avisId = (int)$_POST['avis_id'];
+    $decision = $_POST['decision'];
 
-        $stmt = $pdo->prepare("UPDATE avis SET statut_validation = :statut, date_validation = NOW() WHERE avis_id = :id");
-        $stmt->execute([':statut' => $decision, ':id' => $avisId]);
-        $message_succes = 'Avis ' . ($decision === 'valide' ? 'validé' : 'refusé') . '.';
+    if ($decision === 'valide') {
+        $avisService->validerAvis($avisId);
+    } else {
+        $avisService->refuserAvis($avisId);
     }
+    $message_succes = 'Avis ' . ($decision === 'valide' ? 'validé' : 'refusé') . '.';
+}
 
-    // ========== SUPPRIMER UN MENU ==========
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['supprimer_menu'])) {
-        $menuId = (int)$_POST['menu_id'];
-        $stmt = $pdo->prepare("UPDATE menu SET actif = 0 WHERE menu_id = :id");
-        $stmt->execute([':id' => $menuId]);
-        $message_succes = 'Menu désactivé.';
-    }
+// ========== DÉSACTIVER UN MENU ==========
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['supprimer_menu'])) {
+    $menuId = (int)$_POST['menu_id'];
+    $menuService->desactiverMenu($menuId);
+    $message_succes = 'Menu désactivé.';
+}
 
-    // Récupérer les commandes (avec filtre)
-    $filtreStatut = $_GET['statut'] ?? '';
-    $filtreClient = trim($_GET['client'] ?? '');
-
-    $sqlCommandes = "
-        SELECT c.*, m.titre AS menu_titre, u.nom, u.prenom, u.email 
-        FROM commande c 
-        JOIN menu m ON c.menu_id = m.menu_id 
-        JOIN utilisateur u ON c.utilisateur_id = u.utilisateur_id 
-        WHERE 1=1
-    ";
-    $paramsCommandes = [];
-
-    if ($filtreStatut !== '') {
-        $sqlCommandes .= " AND c.statut = :statut";
-        $paramsCommandes[':statut'] = $filtreStatut;
-    }
-    if ($filtreClient !== '') {
-        $sqlCommandes .= " AND (u.nom LIKE :client OR u.prenom LIKE :client OR u.email LIKE :client)";
-        $paramsCommandes[':client'] = '%' . $filtreClient . '%';
-    }
-
-    $sqlCommandes .= " ORDER BY c.date_commande DESC";
-    $stmt = $pdo->prepare($sqlCommandes);
-    $stmt->execute($paramsCommandes);
-    $commandes = $stmt->fetchAll();
-
-    // Récupérer les menus actifs
-    $menus = $pdo->query("SELECT * FROM menu WHERE actif = 1 ORDER BY menu_id")->fetchAll();
-
-    // Récupérer les avis en attente
-    $avis = $pdo->query("
-        SELECT a.*, u.nom, u.prenom, m.titre AS menu_titre 
-        FROM avis a 
-        JOIN utilisateur u ON a.utilisateur_id = u.utilisateur_id 
-        JOIN commande c ON a.commande_id = c.commande_id 
-        JOIN menu m ON c.menu_id = m.menu_id 
-        WHERE a.statut_validation = 'en_attente'
-        ORDER BY a.date_creation DESC
-    ")->fetchAll();
-    ?>
+// Récupérer les données
+$filtreStatut = $_GET['statut'] ?? '';
+$filtreClient = trim($_GET['client'] ?? '');
+$commandes = $commandeService->getCommandesFiltrees($filtreStatut ?: null, $filtreClient ?: null);
+$menus = $menuService->getMenusActifs();
+$avis = $avisService->getAvisEnAttente();
+?>
 
     <div class="container my-5">
         <h1 class="text-center mb-5">Espace Employé</h1>
@@ -168,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changer_statut'])) {
         <?php foreach ($commandes as $cmd) : ?>
             <div class="card mb-3 p-3">
                 <p><strong><?= htmlspecialchars($cmd['numero_commande']) ?></strong> — <?= htmlspecialchars($cmd['nom']) ?> <?= htmlspecialchars($cmd['prenom']) ?> (<?= htmlspecialchars($cmd['email']) ?>)</p>
-                <p>Menu : <?= htmlspecialchars($cmd['menu_titre']) ?> | <?= $cmd['nombre_personnes'] ?> pers. | <?= number_format($cmd['prix_total'], 2, ',', ' ') ?> €</p>
+                <p>Menu : <?= htmlspecialchars($cmd['titre']) ?> | <?= $cmd['nombre_personnes'] ?> pers. | <?= number_format($cmd['prix_total'], 2, ',', ' ') ?> €</p>
                 <p>Livraison : <?= htmlspecialchars($cmd['date_livraison']) ?> à <?= htmlspecialchars($cmd['heure_livraison']) ?> — <?= htmlspecialchars($cmd['adresse_livraison']) ?>, <?= htmlspecialchars($cmd['ville_livraison']) ?></p>
                 <p>Statut actuel : <strong><?= htmlspecialchars($cmd['statut']) ?></strong></p>
 
@@ -215,9 +171,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changer_statut'])) {
 
     <?php foreach ($menus as $menu) : ?>
         <div class="card mb-2 p-3">
-            <p><strong><?= htmlspecialchars($menu['titre']) ?></strong> — <?= number_format($menu['prix_min'] / $menu['nombre_personnes_min'], 2, ',', ' ') ?> €/pers — Stock : <?= $menu['stock_disponible'] ?></p>
+            <p><strong><?= htmlspecialchars($menu->getTitre()) ?></strong> — <?= number_format( $menu->getPrix() /  $menu->getNbPersonnesMin(), 2, ',', ' ') ?> €/pers — Stock : <?= $menu->getStock() ?></p>
             <form method="post" action="employe.php" style="display: inline;">
-                <input type="hidden" name="menu_id" value="<?= $menu['menu_id'] ?>">
+                <input type="hidden" name="menu_id" value="<?=  $menu->getId() ?>">
                 <input type="hidden" name="supprimer_menu" value="1">
                 <button type="submit" class="btn btn-outline-dark btn-sm" onclick="return confirm('Désactiver ce menu ?')">Désactiver</button>
             </form>
@@ -232,11 +188,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changer_statut'])) {
     <?php else : ?>
         <?php foreach ($avis as $a) : ?>
             <div class="card mb-2 p-3">
-                <p><strong><?= htmlspecialchars($a['nom']) ?> <?= htmlspecialchars($a['prenom']) ?></strong> — <?= htmlspecialchars($a['menu_titre']) ?> — Note : <?= $a['note'] ?>/5</p>
-                <p><?= htmlspecialchars($a['commentaire']) ?></p>
+                <p><strong><?= htmlspecialchars($a->getNom()) ?> <?= htmlspecialchars($a->getPrenom()) ?></strong> — <?= htmlspecialchars($a->getMenuTitre()) ?> — Note : <?= $a->getNote()?>/5</p>
+                <p><?= htmlspecialchars($a->getCommentaire()) ?></p>
 
                 <form method="post" action="employe.php" style="display: inline;">
-                    <input type="hidden" name="avis_id" value="<?= $a['avis_id'] ?>">
+                    <input type="hidden" name="avis_id" value="<?= $a->getId() ?>">
                     <input type="hidden" name="gerer_avis" value="1">
                     <button type="submit" name="decision" value="valide" class="btn btn-dark btn-sm">Valider</button>
                     <button type="submit" name="decision" value="refuse" class="btn btn-outline-dark btn-sm">Refuser</button>
@@ -247,4 +203,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changer_statut'])) {
 
 </div>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

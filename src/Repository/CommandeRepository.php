@@ -113,8 +113,9 @@ class CommandeRepository
             $params[':statut'] = $statut;
         }
         if ($nomClient) {
-            $sql .= " AND (u.nom LIKE :nom OR u.prenom LIKE :nom)";
-            $params[':nom'] = '%' . $nomClient . '%';
+             $sql .= " AND (u.nom LIKE :nom1 OR u.prenom LIKE :nom2)";
+             $params[':nom1'] = '%' . $nomClient . '%';
+             $params[':nom2'] = '%' . $nomClient . '%';
         }
 
         $sql .= " ORDER BY c.date_commande DESC";

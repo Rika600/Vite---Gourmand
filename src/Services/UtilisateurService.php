@@ -69,6 +69,11 @@ class UtilisateurService
         return $this->utilisateurRepository->findById($id);
     }
 
+    public function getUtilisateurParEmail(string $email): ?Utilisateur
+    {
+        return $this->utilisateurRepository->findByEmail($email);
+    }
+
     public function getEmployes(): array
     {
         return $this->utilisateurRepository->findEmployes();

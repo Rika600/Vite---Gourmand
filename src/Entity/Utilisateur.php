@@ -2,7 +2,7 @@
 
 class Utilisateur
 {
-    private int $utlisateur_id;
+    private int $utilisateur_id;
     private string $email;
     private string $password;
     private string $nom;
@@ -19,7 +19,7 @@ class Utilisateur
 
     public function getId(): int
     {
-        return $this->utlisateur_id;
+        return $this->utilisateur_id;
     }
 
     

@@ -43,10 +43,11 @@ class CommandeService
         return 'CMD-' . date('Ymd') . '-' . rand(1000, 9999);
     }
 
-    public function creerCommande(int $utilisateurId, int $menuId, array $infos, array $prix): int
+     public function creerCommande(int $utilisateurId, int $menuId, array $infos, array $prix): array
     {
+        $numero = $this->genererNumero();
         $data = [
-            ':numero' => $this->genererNumero(),
+            ':numero' => $numero,
             ':utilisateur_id' => $utilisateurId,
             ':menu_id' => $menuId,
             ':date_livraison' => $infos['date_livraison'],
@@ -62,7 +63,8 @@ class CommandeService
             ':prix_total' => $prix['total'],
             ':pret_materiel' => $infos['pret_materiel'] ?? 0
         ];
-        return $this->commandeRepository->create($data);
+        $commandeId = $this->commandeRepository->create($data);
+        return ['id' => $commandeId, 'numero' => $numero];
     }
 
     public function getCommandesUtilisateur(int $utilisateurId): array

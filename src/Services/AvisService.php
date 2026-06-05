@@ -44,4 +44,9 @@ class AvisService
     {
         return str_repeat('★', $note) . str_repeat('☆', 5 - $note);
     }
+
+    public function getCommandeIdsAvecAvis(int $utilisateurId): array
+    {
+        return $this->avisRepository->findCommandeIdsParUtilisateur($utilisateurId);
+    }
 }

@@ -32,17 +32,19 @@ class AvisRepository
 
     public function findEnAttente(): array
     {
-       $sql = "
+        $sql = "
             SELECT a.avis_id, a.note, a.commentaire, a.date_creation,
                    a.statut_validation, a.commande_id, a.utilisateur_id,
-                   u.prenom, u.nom
+                   u.prenom, u.nom, m.titre AS menu_titre
             FROM avis a
             JOIN utilisateur u ON a.utilisateur_id = u.utilisateur_id
+            JOIN commande c ON a.commande_id = c.commande_id
+            JOIN menu m ON c.menu_id = m.menu_id
             WHERE a.statut_validation = 'en_attente'
             ORDER BY a.date_creation DESC
         ";
         $stmt = $this->pdo->query($sql);
-        return $stmt->fetchAll(PDO::FETCH_CLASS, Avis::class); 
+        return $stmt->fetchAll(PDO::FETCH_CLASS, Avis::class);
     }
 
     public function create (int $commandeId, int $utilisateurId, int $note, string $commentaire): void
@@ -145,5 +147,12 @@ class AvisRepository
         $stmt->execute([':id' => $commandeId]);
         $result = $stmt->fetch();
         return $result ?: null;
+    }
+
+    public function findCommandeIdsParUtilisateur(int $utilisateurId): array
+    {
+        $stmt = $this->pdo->prepare("SELECT commande_id FROM avis WHERE utilisateur_id = :id");
+        $stmt->execute([':id' => $utilisateurId]);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
 }

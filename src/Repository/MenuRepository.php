@@ -1,6 +1,10 @@
 <?php
 
-require_once __DIR__ .'/..Entity/Menu.php';
+require_once __DIR__ .'/../Entity/Menu.php';
+require_once __DIR__ . '/../Entity/Theme.php';
+require_once __DIR__ . '/../Entity/Regime.php';
+require_once __DIR__ . '/../Entity/Plat.php';
+require_once __DIR__ . '/../Entity/Allergene.php';
 
 class MenuRepository
 {
@@ -14,8 +18,8 @@ class MenuRepository
     public function findAll(): array
     {
         $sql = "
-            SELECT menu_id, titre, description, image_pricipale,
-                    nombre_personnes_min, prix_min, condition_menu, stock_disponible, actif
+            SELECT menu_id, titre, description, image_principale,
+                    nombre_personnes_min, prix_min, conditions_menu, stock_disponible, actif
             FROM menu
             WHERE actif = TRUE
             ORDER BY menu_id ASC
@@ -27,8 +31,8 @@ class MenuRepository
     public function findById(int $menuId): ?Menu
     {
         $sql= "
-            SELECT menu_id, titre, dscription, image_principale,
-                    nombre_personne_min, prix_min, condition_menu, stock_disponible, actif
+            SELECT menu_id, titre, description, image_principale,
+                    nombre_personnes_min, prix_min, conditions_menu, stock_disponible, actif
             FROM menu
             WHERE menu_id = :id AND actif = TRUE
             ";
@@ -50,7 +54,7 @@ class MenuRepository
         ";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':menu_id' => $menuId]);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_CLASS, Plat::class);
     }
 
     public function findThemes(int $menuId): array
@@ -63,7 +67,7 @@ class MenuRepository
         ";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':menu_id' => $menuId]);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_CLASS, Theme::class);
     }
 
     public function findAllergenes(int $menuId): array
@@ -78,21 +82,21 @@ class MenuRepository
         ";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':menu_id' => $menuId]);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_CLASS, Allergene::class);
     }
 
     public function findAllThemes(): array
     {
         $sql = "SELECT theme_id, libelle FROM theme ORDER BY libelle";
         $stmt = $this->pdo->query($sql);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_CLASS, Theme::class);
     }
 
     public function findAllRegimes(): array
     {
         $sql = "SELECT regime_id, libelle FROM regime ORDER BY libelle";
         $stmt = $this->pdo->query($sql);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_CLASS, Regime::class);
     }
 
     public function desactiver(int $menuId): void

@@ -12,6 +12,7 @@ class Avis
     private ? string $date_validation;
     private ? string $prenom = null;
     private ? string $nom = null;
+    private ?string $menu_titre = null;
 
     public function getId(): int 
     {
@@ -66,6 +67,11 @@ class Avis
     public function getInitialeNom(): string
     {
         return $this->nom ? mb_substr($this->nom, 0, 1) . '.' : '';
+    }
+
+    public function getMenuTitre(): ?string
+    {
+        return $this->menu_titre;
     }
 
 }

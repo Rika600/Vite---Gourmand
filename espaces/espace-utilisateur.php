@@ -1,17 +1,23 @@
 <?php
 session_start();
 $pageTitle = 'Mon Espace - Vite & Gourmand';
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/src/Database.php';
+require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../src/Database.php';
+require_once __DIR__ . '/../src/Services/UtilisateurService.php';
+require_once __DIR__ . '/../src/Services/CommandeService.php';
+require_once __DIR__ . '/../src/Services/AvisService.php';
 
 // Vérifier que l'utilisateur est connecté
 if (!isset($_SESSION['utilisateur_id'])) {
-    echo '<div class="container my-5"><div class="alert alert-warning text-center">Vous devez <a href="<?= BASE_URL ?>compte.php">vous connecter</a> pour accéder à votre espace.</div></div>';
-    require_once __DIR__ . '/includes/footer.php';
+    echo '<div class="container my-5"><div class="alert alert-warning text-center">Vous devez <a href="' . BASE_URL . 'pages/compte.php">vous connecter</a> pour accéder à votre espace.</div></div>';
+    require_once __DIR__ . '/../includes/footer.php';
     exit;
 }
 
 $pdo = Database::getConnection();
+$utilisateurService = new UtilisateurService($pdo);
+$commandeService = new CommandeService($pdo);
+$avisService = new AvisService($pdo);
 $userId = $_SESSION['utilisateur_id'];
 
 $message_succes = '';
@@ -19,27 +25,20 @@ $message_erreur = '';
 
 // ========== MODIFIER SES INFOS ==========
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_infos'])) {
-    $nom = trim($_POST['nom'] ?? '');
-    $prenom = trim($_POST['prenom'] ?? '');
-    $telephone = trim($_POST['telephone'] ?? '');
-    $adresse = trim($_POST['adresse'] ?? '');
-    $ville = trim($_POST['ville'] ?? '');
+    $data = [
+        'nom' => trim($_POST['nom'] ?? ''),
+        'prenom' => trim($_POST['prenom'] ?? ''),
+        'telephone' => trim($_POST['telephone'] ?? ''),
+        'adresse' => trim($_POST['adresse'] ?? ''),
+        'ville' => trim($_POST['ville'] ?? '')
+    ];
 
-    if ($nom === '' || $prenom === '' || $telephone === '' || $adresse === '' || $ville === '') {
+    if ($data['nom'] === '' || $data['prenom'] === '' || $data['telephone'] === '' || $data['adresse'] === '' || $data['ville'] === '') {
         $message_erreur = 'Tous les champs sont obligatoires.';
     } else {
-        $sql = "UPDATE utilisateur SET nom = :nom, prenom = :prenom, telephone = :telephone, adresse_postale = :adresse, ville = :ville WHERE utilisateur_id = :id";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            ':nom' => $nom,
-            ':prenom' => $prenom,
-            ':telephone' => $telephone,
-            ':adresse' => $adresse,
-            ':ville' => $ville,
-            ':id' => $userId
-        ]);
-        $_SESSION['nom'] = $nom;
-        $_SESSION['prenom'] = $prenom;
+        $utilisateurService->mettreAJourProfil($userId, $data);
+        $_SESSION['nom'] = $data['nom'];
+        $_SESSION['prenom'] = $data['prenom'];
         $message_succes = 'Informations mises à jour.';
     }
 }
@@ -47,71 +46,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_infos'])) {
 // ========== ANNULER UNE COMMANDE ==========
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['annuler_commande'])) {
     $commandeId = (int)$_POST['commande_id'];
-    // Vérifier que la commande appartient à l'utilisateur et est en_attente
-    $stmt = $pdo->prepare("SELECT * FROM commande WHERE commande_id = :id AND utilisateur_id = :user_id AND statut = 'en_attente'");
-    $stmt->execute([':id' => $commandeId, ':user_id' => $userId]);
-    $commande = $stmt->fetch();
-
-    if ($commande) {
-        $stmt = $pdo->prepare("UPDATE commande SET statut = 'annulee' WHERE commande_id = :id");
-        $stmt->execute([':id' => $commandeId]);
+    if ($commandeService->annulerCommande($commandeId, $userId)) {
         $message_succes = 'Commande annulée.';
     } else {
         $message_erreur = 'Impossible d\'annuler cette commande.';
     }
-      }
-    // ========== MODIFIER UNE COMMANDE ==========
+}
+
+// ========== MODIFIER UNE COMMANDE ==========
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_commande'])) {
     $commandeId = (int)$_POST['commande_id'];
-    $date_livraison = $_POST['date_livraison'] ?? '';
-    $heure_livraison = $_POST['heure_livraison'] ?? '';
-    $adresse_livraison = trim($_POST['adresse_livraison'] ?? '');
-    $nombre_personnes = (int)$_POST['nombre_personnes'];
+    $data = [
+        ':date' => $_POST['date_livraison'] ?? '',
+        ':heure' => $_POST['heure_livraison'] ?? '',
+        ':adresse' => trim($_POST['adresse_livraison'] ?? ''),
+        ':ville' => trim($_POST['ville_livraison'] ?? ''),
+        ':nb' => (int)$_POST['nombre_personnes']
+    ];
 
-    // Vérifier que la commande appartient à l'utilisateur et est en_attente
-    $stmt = $pdo->prepare("SELECT * FROM commande WHERE commande_id = :id AND utilisateur_id = :user_id AND statut = 'en_attente'");
-    $stmt->execute([':id' => $commandeId, ':user_id' => $userId]);
-    $commande = $stmt->fetch();
-
-    if ($commande) {
-        $sql = "UPDATE commande SET date_livraison = :date, heure_livraison = :heure, adresse_livraison = :adresse, nombre_personnes = :nb WHERE commande_id = :id";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            ':date' => $date_livraison,
-            ':heure' => $heure_livraison,
-            ':adresse' => $adresse_livraison,
-            ':nb' => $nombre_personnes,
-            ':id' => $commandeId
-        ]);
+    if ($commandeService->modifierCommande($commandeId, $userId, $data)) {
         $message_succes = 'Commande modifiée avec succès.';
     } else {
         $message_erreur = 'Impossible de modifier cette commande.';
     }
 }
 
-
-    // ========== DONNER UN AVIS ==========
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['donner_avis'])) {
-        $commandeId = (int)$_POST['commande_id'];
-        $note = (int)$_POST['note'];
-        $commentaire = trim($_POST['commentaire'] ?? '');
+// ========== DONNER UN AVIS ==========
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['donner_avis'])) {
+    $commandeId = (int)$_POST['commande_id'];
+    $note = (int)$_POST['note'];
+    $commentaire = trim($_POST['commentaire'] ?? '');
 
     if ($note < 1 || $note > 5 || $commentaire === '') {
         $message_erreur = 'Note entre 1 et 5 et commentaire obligatoire.';
     } else {
-        // Vérifier que la commande est terminée et pas encore d'avis
-        $stmt = $pdo->prepare("SELECT * FROM commande WHERE commande_id = :id AND utilisateur_id = :user_id AND statut = 'terminee'");
-        $stmt->execute([':id' => $commandeId, ':user_id' => $userId]);
-        $commande = $stmt->fetch();
-
-        if ($commande) {
-            $stmt = $pdo->prepare("INSERT INTO avis (commande_id, utilisateur_id, note, commentaire) VALUES (:cmd_id, :user_id, :note, :commentaire)");
-            $stmt->execute([
-                ':cmd_id' => $commandeId,
-                ':user_id' => $userId,
-                ':note' => $note,
-                ':commentaire' => $commentaire
-            ]);
+        if ($avisService->deposerAvis($commandeId, $userId, $note, $commentaire)) {
             $message_succes = 'Merci pour votre avis !';
         } else {
             $message_erreur = 'Impossible de donner un avis sur cette commande.';
@@ -119,26 +88,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_commande']))
     }
 }
 
-// Récupérer les infos de l'utilisateur
-$stmt = $pdo->prepare("SELECT * FROM utilisateur WHERE utilisateur_id = :id");
-$stmt->execute([':id' => $userId]);
-$utilisateur = $stmt->fetch();
-
-// Récupérer les commandes de l'utilisateur
-$stmt = $pdo->prepare("
-    SELECT c.*, m.titre AS menu_titre 
-    FROM commande c 
-    JOIN menu m ON c.menu_id = m.menu_id 
-    WHERE c.utilisateur_id = :id 
-    ORDER BY c.date_commande DESC
-");
-$stmt->execute([':id' => $userId]);
-$commandes = $stmt->fetchAll();
-
-// Récupérer les avis déjà donnés
-$stmt = $pdo->prepare("SELECT commande_id FROM avis WHERE utilisateur_id = :id");
-$stmt->execute([':id' => $userId]);
-$avisExistants = $stmt->fetchAll(PDO::FETCH_COLUMN);
+// Récupérer les données
+$utilisateur = $utilisateurService->getUtilisateur($userId);
+$commandes = $commandeService->getCommandesUtilisateur($userId);
+$avisExistants = $avisService->getCommandeIdsAvecAvis($userId);
 ?>
 
 <div class="container my-5">
@@ -158,23 +111,23 @@ $avisExistants = $stmt->fetchAll(PDO::FETCH_COLUMN);
     <form method="post" action="espace-utilisateur.php" class="formulaire-contact mb-5">
         <fieldset>
             <label for="nom">Nom :
-                <input id="nom" name="nom" type="text" value="<?= htmlspecialchars($utilisateur['nom']) ?>" required>
+                <input id="nom" name="nom" type="text" value="<?= htmlspecialchars($utilisateur->getNom()) ?>" required>
             </label>
 
             <label for="prenom">Prénom :
-                <input id="prenom" name="prenom" type="text" value="<?= htmlspecialchars($utilisateur['prenom']) ?>" required>
+                <input id="prenom" name="prenom" type="text" value="<?= htmlspecialchars($utilisateur->getPrenom()) ?>" required>
             </label>
 
             <label for="telephone">Téléphone :
-                <input id="telephone" name="telephone" type="tel" value="<?= htmlspecialchars($utilisateur['telephone']) ?>" required>
+                <input id="telephone" name="telephone" type="tel" value="<?= htmlspecialchars($utilisateur->getTelephone()) ?>" required>
             </label>
 
             <label for="adresse">Adresse :
-                <input id="adresse" name="adresse" type="text" value="<?= htmlspecialchars($utilisateur['adresse_postale']) ?>" required>
+                <input id="adresse" name="adresse" type="text" value="<?= htmlspecialchars($utilisateur->getAdresse()) ?>" required>
             </label>
 
             <label for="ville">Ville :
-                <input id="ville" name="ville" type="text" value="<?= htmlspecialchars($utilisateur['ville']) ?>" required>
+                <input id="ville" name="ville" type="text" value="<?= htmlspecialchars($utilisateur->getVille()) ?>" required>
             </label>
         </fieldset>
 
@@ -190,42 +143,42 @@ $avisExistants = $stmt->fetchAll(PDO::FETCH_COLUMN);
     <?php else : ?>
         <?php foreach ($commandes as $cmd) : ?>
             <div class="card mb-3 p-3">
-                <p><strong>Commande :</strong> <?= htmlspecialchars($cmd['numero_commande']) ?></p>
-                <p><strong>Menu :</strong> <?= htmlspecialchars($cmd['menu_titre']) ?></p>
-                <p><strong>Date :</strong> <?= htmlspecialchars($cmd['date_livraison']) ?></p>
-                <p><strong>Personnes :</strong> <?= $cmd['nombre_personnes'] ?></p>
-                <p><strong>Total :</strong> <?= number_format($cmd['prix_total'], 2, ',', ' ') ?> €</p>
-                <p><strong>Statut :</strong> <?= htmlspecialchars($cmd['statut']) ?></p>
+                <p><strong>Commande :</strong> <?= htmlspecialchars($cmd->getNumero()) ?></p>
+                <p><strong>Menu :</strong> <?= htmlspecialchars($cmd->getTitreMenu()) ?></p>
+                <p><strong>Date :</strong> <?= htmlspecialchars($cmd->getDateLivraison()) ?></p>
+                <p><strong>Personnes :</strong> <?= $cmd->getNbPersonnes() ?></p>
+                <p><strong>Total :</strong> <?= number_format($cmd->getPrixTotal(), 2, ',', ' ') ?> €</p>
+                <p><strong>Statut :</strong> <?= htmlspecialchars($cmd->getStatut()) ?></p>
 
                 <!-- Annuler et Modifier si en_attente -->
-                 <?php if ($cmd['statut'] === 'en_attente') : ?>
+                 <?php if ($cmd->getStatut() === 'en_attente') : ?>
                     <form method="post" action="espace-utilisateur.php" style="display: inline;">
-                        <input type="hidden" name="commande_id" value="<?= $cmd['commande_id'] ?>">
+                        <input type="hidden" name="commande_id" value="<?= $cmd->getId() ?>">
                         <input type="hidden" name="annuler_commande" value="1">
                         <button type="submit" class="btn btn-outline-dark btn-sm">Annuler</button>
                     </form>
 
-                    <button class="btn btn-dark btn-sm" onclick="document.getElementById('modif-<?= $cmd['commande_id'] ?>').style.display='block'">Modifier</button>
+                    <button class="btn btn-dark btn-sm" onclick="document.getElementById('modif-<?= $cmd->getId() ?>').style.display='block'">Modifier</button>
 
-                    <div id="modif-<?= $cmd['commande_id'] ?>" style="display:none;" class="mt-3">
+                    <div id="modif-<?= $cmd->getId() ?>" style="display:none;" class="mt-3">
                         <form method="post" action="espace-utilisateur.php" class="formulaire-contact">
-                            <input type="hidden" name="commande_id" value="<?= $cmd['commande_id'] ?>">
+                            <input type="hidden" name="commande_id" value="<?= $cmd->getId() ?>">
                             <input type="hidden" name="modifier_commande" value="1">
 
-                            <label for="date-<?= $cmd['commande_id'] ?>">Date de livraison :
-                                <input id="date-<?= $cmd['commande_id'] ?>" name="date_livraison" type="date" value="<?= htmlspecialchars($cmd['date_livraison']) ?>" required>
+                            <label for="date-<?= $cmd->getId() ?>">Date de livraison :
+                                <input id="date-<?= $cmd->getId() ?>" name="date_livraison" type="date" value="<?= htmlspecialchars($cmd->getDateLivraison()) ?>" required>
                             </label>
 
-                            <label for="heure-<?= $cmd['commande_id'] ?>">Heure :
-                                <input id="heure-<?= $cmd['commande_id'] ?>" name="heure_livraison" type="time" value="<?= htmlspecialchars($cmd['heure_livraison']) ?>" required>
+                            <label for="heure-<?= $cmd->getId() ?>">Heure :
+                                <input id="heure-<?= $cmd->getId() ?>" name="heure_livraison" type="time" value="<?= htmlspecialchars( $cmd->getHeureLivraison()) ?>" required>
                             </label>
 
-                            <label for="adresse-<?= $cmd['commande_id'] ?>">Adresse de livraison :
-                                <input id="adresse-<?= $cmd['commande_id'] ?>" name="adresse_livraison" type="text" value="<?= htmlspecialchars($cmd['adresse_livraison']) ?>" required>
+                            <label for="adresse-<?= $cmd->getId() ?>">Adresse de livraison :
+                                <input id="adresse-<?= $cmd->getId() ?>" name="adresse_livraison" type="text" value="<?= htmlspecialchars($cmd->getAdresseLivraison()) ?>" required>
                             </label>
 
-                            <label for="nb-<?= $cmd['commande_id'] ?>">Nombre de personnes :
-                                <input id="nb-<?= $cmd['commande_id'] ?>" name="nombre_personnes" type="number" min="1" value="<?= $cmd['nombre_personnes'] ?>" required>
+                            <label for="nb-<?= $cmd->getId() ?>">Nombre de personnes :
+                                <input id="nb-<?= $cmd->getId() ?>" name="nombre_personnes" type="number" min="1" value="<?= $cmd->getNbPersonnes() ?>" required>
                             </label>
 
                             <button type="submit" class="btn btn-dark btn-sm">Enregistrer</button>
@@ -235,9 +188,7 @@ $avisExistants = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
                 <!-- Suivi de commande -->
                 <?php
-                $stmt_suivi = $pdo->prepare("SELECT statut, date_changement FROM suivi_commande WHERE commande_id = :id ORDER BY date_changement ASC");
-                $stmt_suivi->execute([':id' => $cmd['commande_id']]);
-                $suivis = $stmt_suivi->fetchAll();
+                $suivis = $commandeService->getSuivi($cmd->getId());
                 ?>
                 <?php if (!empty($suivis)) : ?>
                     <div class="mt-3">
@@ -249,13 +200,13 @@ $avisExistants = $stmt->fetchAll(PDO::FETCH_COLUMN);
                 <?php endif; ?>
 
                 <!-- Donner un avis si terminée et pas encore d'avis -->
-                <?php if ($cmd['statut'] === 'terminee' && !in_array($cmd['commande_id'], $avisExistants)) : ?>
+                <?php if ($cmd->getStatut() === 'terminee' && !in_array($cmd->getId(), $avisExistants)) : ?>
                     <form method="post" action="espace-utilisateur.php" class="mt-3">
-                        <input type="hidden" name="commande_id" value="<?= $cmd['commande_id'] ?>">
+                        <input type="hidden" name="commande_id" value="<?= $cmd->getId() ?>">
                         <input type="hidden" name="donner_avis" value="1">
 
-                        <label for="note-<?= $cmd['commande_id'] ?>">Note (1-5) :
-                            <select name="note" id="note-<?= $cmd['commande_id'] ?>">
+                        <label for="note-<?= $cmd->getId() ?>">Note (1-5) :
+                            <select name="note" id="note-<?= $cmd->getId() ?>">
                                 <option value="1">1</option>
                                 <option value="2">2</option>
                                 <option value="3">3</option>
@@ -264,8 +215,8 @@ $avisExistants = $stmt->fetchAll(PDO::FETCH_COLUMN);
                             </select>
                         </label>
 
-                        <label for="commentaire-<?= $cmd['commande_id'] ?>">Commentaire :
-                            <textarea name="commentaire" id="commentaire-<?= $cmd['commande_id'] ?>" rows="3" required></textarea>
+                        <label for="commentaire-<?= $cmd->getId() ?>">Commentaire :
+                            <textarea name="commentaire" id="commentaire-<?= $cmd->getId() ?>" rows="3" required></textarea>
                         </label>
 
                         <button type="submit" class="btn btn-dark btn-sm">Envoyer mon avis</button>
@@ -276,4 +227,4 @@ $avisExistants = $stmt->fetchAll(PDO::FETCH_COLUMN);
     <?php endif; ?>
 </div>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

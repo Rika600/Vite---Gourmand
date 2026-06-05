@@ -1,86 +1,44 @@
 <?php
 $pageTitle = 'Mon Compte - Vite & Gourmand';
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/src/Database.php';
-require_once __DIR__ . '/mailer.php';
+require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../src/Database.php';
+require_once __DIR__ . '/../src/mailer.php';
+require_once __DIR__ . '/../src/Services/UtilisateurService.php';
 
 $pdo = Database::getConnection();
+$utilisateurService = new UtilisateurService($pdo);
 
 $message_succes = '';
 $message_erreur = '';
 
 // ========== INSCRIPTION ==========
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['inscription'])) {
-    $nom = trim($_POST['nom'] ?? '');
-    $prenom = trim($_POST['prenom'] ?? '');
-    $email = trim($_POST['email_inscription'] ?? '');
-    $telephone = trim($_POST['telephone'] ?? '');
-    $adresse = trim($_POST['adresse'] ?? '');
-    $ville = trim($_POST['ville'] ?? '');
-    $code_postal = trim($_POST['code_postal'] ?? '');
-    $mdp = $_POST['mdp'] ?? '';
-    $mdp_confirm = $_POST['mdp_confirm'] ?? '';
+  $data = [
+        'email' => trim($_POST['email_inscription'] ?? ''),
+        'password' => $_POST['mdp'] ?? '',
+        'password_confirm' => $_POST['mdp_confirm'] ?? '',
+        'nom' => trim($_POST['nom'] ?? ''),
+        'prenom' => trim($_POST['prenom'] ?? ''),
+        'telephone' => trim($_POST['telephone'] ?? ''),
+        'adresse' => trim($_POST['adresse'] ?? ''),
+        'ville' => trim($_POST['ville'] ?? '')
+    ];
 
-    // Vérifier que tous les champs sont remplis
-    if ($nom === '' || $prenom === '' || $email === '' || $telephone === '' || $adresse === '' || $ville === '' || $mdp === '') {
-        $message_erreur = 'Tous les champs sont obligatoires.';
-    }
-    // Vérifier le format email
-    else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $message_erreur = 'Adresse email invalide.';
-    }
-    // Vérifier le mot de passe (10 chars min + majuscule + minuscule + chiffre + spécial)
-    else if (strlen($mdp) < 10) {
-        $message_erreur = 'Le mot de passe doit contenir au moins 10 caractères.';
-    }
-    else if (!preg_match('/[A-Z]/', $mdp)) {
-        $message_erreur = 'Le mot de passe doit contenir au moins une majuscule.';
-    }
-    else if (!preg_match('/[a-z]/', $mdp)) {
-        $message_erreur = 'Le mot de passe doit contenir au moins une minuscule.';
-    }
-    else if (!preg_match('/[0-9]/', $mdp)) {
-        $message_erreur = 'Le mot de passe doit contenir au moins un chiffre.';
-    }
-    else if (!preg_match('/[^a-zA-Z0-9]/', $mdp)) {
-        $message_erreur = 'Le mot de passe doit contenir au moins un caractère spécial.';
-    }
-    // Vérifier que les 2 mots de passe correspondent
-    else if ($mdp !== $mdp_confirm) {
-        $message_erreur = 'Les mots de passe ne correspondent pas.';
-    }
-    else {
-        // Vérifier si l'email existe déjà
-        $stmt = $pdo->prepare("SELECT utilisateur_id FROM utilisateur WHERE email = :email");
-        $stmt->execute([':email' => $email]);
+    $result = $utilisateurService->inscrire($data);
 
-        if ($stmt->fetch()) {
-            $message_erreur = 'Cette adresse email est déjà utilisée.';
-        } else {
-            // Tout est bon → insérer l'utilisateur
-            $hash = password_hash($mdp, PASSWORD_BCRYPT);
-            $sql = "INSERT INTO utilisateur (email, password, nom, prenom, telephone, adresse_postale, ville, role_id) 
-                    VALUES (:email, :password, :nom, :prenom, :telephone, :adresse, :ville, 3)";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                ':email' => $email,
-                ':password' => $hash,
-                ':nom' => $nom,
-                ':prenom' => $prenom,
-                ':telephone' => $telephone,
-                ':adresse' => $adresse,
-                ':ville' => $ville
-            ]);
-            envoyerMail($email, 'Bienvenue chez Vite & Gourmand !',
-            '<h2>Bienvenue' . htmlspecialchars($prenom) . ' !</h2>
+    if ($result['success']) {
+        envoyerMail($data['email'], 'Bienvenue chez Vite & Gourmand !',
+            '<h2>Bienvenue ' . htmlspecialchars($data['prenom']) . ' !</h2>
             <p>Votre compte a été créé avec succès.</p>
-            <p>Vous puvez maintenant commander nos menus traiteur.</p>
+            <p>Vous pouvez maintenant commander nos menus traiteur.</p>
             <p>A bientôt,<br>L\'équipe Vite & Gourmand</p>'
-            );
-            $message_succes = 'Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter.';
-        }
+        );
+        $message_succes = 'Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter.';
+    } else {
+        $message_erreur = $result['erreur'];
     }
 }
+
 
 // ========== CONNEXION ==========
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['connexion'])) {
@@ -90,20 +48,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['connexion'])) {
     if ($email_co === '' || $mdp_co === '') {
         $message_erreur = 'Veuillez remplir tous les champs.';
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM utilisateur WHERE email = :email AND actif = 1");
-        $stmt->execute([':email' => $email_co]);
-        $utilisateur = $stmt->fetch();
+        $result = $utilisateurService->connecter($email_co, $mdp_co);
 
-        if ($utilisateur && password_verify($mdp_co, $utilisateur['password'])) {
-            // Connexion réussie → démarrer la session
-            $_SESSION['utilisateur_id'] = $utilisateur['utilisateur_id'];
-            $_SESSION['nom'] = $utilisateur['nom'];
-            $_SESSION['prenom'] = $utilisateur['prenom'];
-            $_SESSION['email'] = $utilisateur['email'];
-            $_SESSION['role_id'] = $utilisateur['role_id'];
-            $message_succes = 'Bienvenue ' . htmlspecialchars($utilisateur['prenom']) . ' !';
+        if ($result['success']) {
+            $utilisateur = $result['utilisateur'];
+            $_SESSION['utilisateur_id'] = $utilisateur->getId();
+            $_SESSION['nom'] = $utilisateur->getNom();
+            $_SESSION['prenom'] = $utilisateur->getPrenom();
+            $_SESSION['email'] = $utilisateur->getEmail();
+            $_SESSION['role_id'] = $utilisateur->getRoleId();
+            $message_succes = 'Bienvenue ' . htmlspecialchars($utilisateur->getPrenom()) . ' !';
         } else {
-            $message_erreur = 'Email ou mot de passe incorrect.';
+            $message_erreur = $result['erreur'];
         }
     }
 }
@@ -141,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['connexion'])) {
                 <input type="hidden" name="connexion" value="1">
                 <input type="submit" value="Se connecter" class="btn btn-dark">
                 <p class="text-center mt-3">
-                <a href="<?= BASE_URL ?>mot-de-passe-oublie.php">Mot de passe oublié ?</a>
+                <a href="<?= BASE_URL ?>pages/mot-de-passe-oublie.php">Mot de passe oublié ?</a>
                 </p>
             </form>
         </div>
@@ -198,4 +154,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['connexion'])) {
     </div>
 </div>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

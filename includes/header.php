@@ -25,23 +25,23 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto gap-5">
                     <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>">ACCUEIL</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>menus.php">MENU</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>galerie.php">GALERIE</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>livraison.php">LIVRAISON</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>pages/menus.php">MENU</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>pages/galerie.php">GALERIE</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>pages/livraison.php">LIVRAISON</a></li>
                     <?php if (!isset($_SESSION['utilisateur_id'])) : ?>
-                        <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>compte.php">COMPTE</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>pages/compte.php">COMPTE</a></li>
                     <?php else : ?>
-                        <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>espace-utilisateur.php">MON ESPACE</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>espaces/espace-utilisateur.php">MON ESPACE</a></li>
                         <?php if ($_SESSION['role_id'] == 2 || $_SESSION['role_id'] == 1) : ?>
-                            <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>employe.php">EMPLOYÉ</a></li>
+                            <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>espaces/employe.php">EMPLOYÉ</a></li>
                         <?php endif; ?>
                         <?php if ($_SESSION['role_id'] == 1) : ?>
-                            <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>espace-admin.php">ADMIN</a></li>
+                            <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>espaces/espace-admin.php">ADMIN</a></li>
                         <?php endif; ?>
                     <?php endif; ?>
-                    <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>contact.php">CONTACT</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>pages/contact.php">CONTACT</a></li>
                     <?php if (isset($_SESSION['utilisateur_id'])) : ?>
-                        <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>deconnexion.php">DÉCONNEXION</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="<?= BASE_URL ?>pages/deconnexion.php">DÉCONNEXION</a></li>
                     <?php endif; ?>
                 </ul>
             </div>
