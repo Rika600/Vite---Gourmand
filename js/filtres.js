@@ -23,33 +23,93 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(function(response) { return response.json(); })
             .then(function(menus) {
                 var grille = document.getElementById('menus-grid');
-                var html = '';
+                grille.textContent = '';
 
                 if (menus.length === 0) {
-                    html = '<p class="text-center">Aucun menu trouvé.</p>';
+                    var p = document.createElement('p');
+                    p.className = 'text-center';
+                    p.textContent = 'Aucun menu trouvé.';
+                    grille.appendChild(p);
                 } else {
                     for (var i = 0; i < menus.length; i++) {
                         var m = menus[i];
-                        html += '<div class="menu-wrapper">';
-                        html += '<h2 class="text-center theme-titre">' + m.theme + '</h2>';
-                        html += '<hr class="theme-line">';
-                        html += '<div class="menu-card menu-liste"><div class="menu-top">';
-                        html += '<div class="menu-left"><div class="menu-image-wrapper">';
-                        html += '<img src="' + BASE_URL + m.image_principale + '" alt="' + m.titre + '" class="menu-image">';
-                        html += '<a href="' + BASE_URL + 'pages/detail-menus.php?id=' + m.menu_id + '" class="menu-overlay">';
-                        html += '<span class="overlay-button">Voir le détail</span></a>';
-                        html += '</div></div>';
-                        html += '<div class="menu-infos">';
-                        html += '<h3 class="menu-titre">' + m.titre + '</h3>';
-                        html += '<hr class="plat-line mb-5">';
-                        html += '<p class="plat-nom">' + m.description + '</p>';
-                        html += '<p class="prix">' + m.prix_personne + ' € par personne,<br>' + m.nombre_personnes_min + ' personnes minimum.</p>';
-                        html += '<a href="' + BASE_URL + 'pages/detail-menus.php?id=' + m.menu_id + '" class="btn btn-dark">Voir le détail</a>';
-                        html += '</div></div></div></div>';
+
+                        var wrapper = document.createElement('div');
+                        wrapper.className = 'menu-wrapper';
+
+                        var h2 = document.createElement('h2');
+                        h2.className = 'text-center theme-titre';
+                        h2.textContent = m.theme;
+                        wrapper.appendChild(h2);
+
+                        var hr1 = document.createElement('hr');
+                        hr1.className = 'theme-line';
+                        wrapper.appendChild(hr1);
+
+                        var card = document.createElement('div');
+                        card.className = 'menu-card menu-liste';
+
+                        var top = document.createElement('div');
+                        top.className = 'menu-top';
+
+                        var left = document.createElement('div');
+                        left.className = 'menu-left';
+
+                        var imgWrapper = document.createElement('div');
+                        imgWrapper.className = 'menu-image-wrapper';
+
+                        var img = document.createElement('img');
+                        img.src = BASE_URL + m.image_principale;
+                        img.alt = m.titre;
+                        img.className = 'menu-image';
+                        imgWrapper.appendChild(img);
+
+                        var overlay = document.createElement('a');
+                        overlay.href = BASE_URL + 'pages/detail-menus.php?id=' + m.menu_id;
+                        overlay.className = 'menu-overlay';
+                        var overlaySpan = document.createElement('span');
+                        overlaySpan.className = 'overlay-button';
+                        overlaySpan.textContent = 'Voir le détail';
+                        overlay.appendChild(overlaySpan);
+                        imgWrapper.appendChild(overlay);
+
+                        left.appendChild(imgWrapper);
+                        top.appendChild(left);
+
+                        var infos = document.createElement('div');
+                        infos.className = 'menu-infos';
+
+                        var h3 = document.createElement('h3');
+                        h3.className = 'menu-titre';
+                        h3.textContent = m.titre;
+                        infos.appendChild(h3);
+
+                        var hr2 = document.createElement('hr');
+                        hr2.className = 'plat-line mb-5';
+                        infos.appendChild(hr2);
+
+                        var desc = document.createElement('p');
+                        desc.className = 'plat-nom';
+                        desc.textContent = m.description;
+                        infos.appendChild(desc);
+
+                        var prix = document.createElement('p');
+                        prix.className = 'prix';
+                        prix.textContent = m.prix_personne + ' € par personne, ' + m.nombre_personnes_min + ' personnes minimum.';
+                        infos.appendChild(prix);
+
+                        var btn = document.createElement('a');
+                        btn.href = BASE_URL + 'pages/detail-menus.php?id=' + m.menu_id;
+                        btn.className = 'btn btn-dark';
+                        btn.textContent = 'Voir le détail';
+                        infos.appendChild(btn);
+
+                        top.appendChild(infos);
+                        card.appendChild(top);
+                        wrapper.appendChild(card);
+                        grille.appendChild(wrapper);
                     }
                 }
-
-                grille.innerHTML = html;
             });
     });
 

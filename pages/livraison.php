@@ -251,4 +251,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 </div>
 
+     <script>var BASE_URL = '<?= BASE_URL ?>';</script>
+    <script src="<?= BASE_URL ?>js/livraison.js"></script>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
