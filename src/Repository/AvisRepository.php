@@ -63,7 +63,7 @@ class AvisRepository
     public function existsPourCommande(int $commandeId): bool
     {
         $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM avis WHERE commande_id = :id");
-        $stmt->execute([':id => $commandeId']);
+        $stmt->execute([':id' => $commandeId ]);
         return $stmt->fetchColumn() > 0;
     }
 

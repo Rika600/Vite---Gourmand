@@ -122,7 +122,7 @@ $regimes = $filtres['regimes'];
                         <h3 class="menu-titre"><?= htmlspecialchars($menu->getTitre()) ?></h3>
                         <hr class="plat-line mb-5">
 
-                        <p class="plat-nom"><?= htmlspecialchars($menu->getDescription) ?></p>
+                        <p class="plat-nom"><?= htmlspecialchars($menu->getDescription()) ?></p>
 
                         <p class="prix">
                             <?= number_format($menu->getPrix() / $menu->getNbPersonnesMin(), 2, ',', ' ') ?> € par personne,<br>
