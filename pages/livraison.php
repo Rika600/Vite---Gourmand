@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <?php if (!isset($_SESSION['utilisateur_id'])) : ?>
         <div class="alert alert-warning text-center">
-            Vous devez <a href="<?= BASE_URL ?>compte.php" style="color: #432911; text-decoration: underline;" >vous connecter</a> pour passer commande.
+            Vous devez <a href="<?= BASE_URL ?>pages/compte.php" style="color: #432911; text-decoration: underline;" >vous connecter</a> pour passer commande.
         </div>
     <?php else : ?>
 
