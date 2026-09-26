@@ -18,5 +18,5 @@ define('MONGODB_URI', 'mongodb+srv://karima740_db_user:ZAcS7gb11NvQ1m0x@cluster0
 
 // Configuration PHPMailer
 define('MAIL_USERNAME', 'vite.gourmand.contact@gmail.com');
-define('MAIL_PASSWORD', 'uavtonyvawmpxxby');
+define('MAIL_PASSWORD', 'bmgm fuhg ehpb drqu');
 
