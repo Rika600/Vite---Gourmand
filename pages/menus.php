@@ -109,7 +109,7 @@ $regimes = $filtres['regimes'];
                 <div class="menu-top">
                     <div class="menu-left">
                         <div class="menu-image-wrapper">
-                          <img src="<?= BASE_URL ?><?= htmlspecialchars($menu->getImage()) ?>"
+                          <img  src="<?= htmlspecialchars($menu->getImage()) ?>"
                                  alt="<?= htmlspecialchars($menu->getTitre()) ?>"
                                  class="menu-image">
                             <a href="<?= BASE_URL ?>pages/detail-menus.php?id=<?= $menu->getId() ?>" class="menu-overlay">
