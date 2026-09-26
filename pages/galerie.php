@@ -21,7 +21,7 @@ $menus = $menuService->getMenusActifs();
             <div class="col-md-6 mb-5">
                 <div class="text-center mt-4">
                     <a href="<?= BASE_URL ?>pages/detail-menus.php?id=<?= $menu->getId() ?>">
-                      <img src="<?= BASE_URL ?><?= htmlspecialchars($menu->getImage()) ?>" 
+                      <img src="<?= htmlspecialchars($menu->getImage()) ?>" 
                              alt="<?= htmlspecialchars($menu->getTitre()) ?>"
                              class="img-fluid"
                              style="width: 100%; height: 300px; object-fit: cover;">

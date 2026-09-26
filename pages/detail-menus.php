@@ -36,7 +36,7 @@ $theme = $menuComplet['themes'][0]->getLibelle() ?? 'Menu';
             <!-- Image à GAUCHE -->
             <div class="menu-left">
                 <div class="menu-image-wrapper">
-                    <img src="<?= BASE_URL ?><?= htmlspecialchars($menu->getImage()) ?>" 
+                    <img src="<?= htmlspecialchars($menu->getImage())?>" 
                          alt="<?= htmlspecialchars($menu->getTitre()) ?>"
                          class="menu-image">
                 </div>
