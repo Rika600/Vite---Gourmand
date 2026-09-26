@@ -29,6 +29,7 @@ function envoyerMail($destinataire, $sujet, $corps) {
         return true;
 
     } catch (Exception $e) {
+      error_log('PHPMailer Error: ' . $mail->ErrorInfo);
         return false;
     }
 }
