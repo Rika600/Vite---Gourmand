@@ -14,9 +14,9 @@ define('DB_PASSWORD', '');
 // define('DB_PASSWORD', 'root');
 
 // Configuration MongoDB
-define('MONGODB_URI', 'mongodb+srv://karima740_db_user:ZAcS7gb11NvQ1m0x@cluster0.hsa6bee.mongodb.net/?retryWrites=true&w=majority&tls=true&tlsAllowInvalidCertificates=true');
+define('MONGODB_URI', 'mongodb+srv://karima740_db_user:@cluster0.hsa6bee.mongodb.net/?retryWrites=true&w=majority&tls=true&tlsAllowInvalidCertificates=true');
 
 // Configuration PHPMailer
 define('MAIL_USERNAME', 'vite.gourmand.contact@gmail.com');
-define('MAIL_PASSWORD', 'uavtonyvawmpxxby');
+define('MAIL_PASSWORD', '');
 
