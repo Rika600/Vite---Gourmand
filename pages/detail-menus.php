@@ -50,15 +50,15 @@ $theme = $menuComplet['themes'][0]->getLibelle() ?? 'Menu';
                 <p><?= htmlspecialchars($menu->getDescription()) ?></p>
 
                 <h4 class="plat-type">Entrée</h4>
-                <p class="plat-nom"><?= htmlspecialchars($platsParType['entree']?? '') ?></p>
+                <p class="plat-nom"><?= htmlspecialchars($platsParType['entree']) ?></p>
                 <hr class="plat-line">
 
                 <h4 class="plat-type">Plat</h4>
-                <p class="plat-nom"><?= htmlspecialchars( $platsParType['plat']??'') ?></p>
+                <p class="plat-nom"><?= htmlspecialchars( $platsParType['plat']) ?></p>
                 <hr class="plat-line">
 
                 <h4 class="plat-type">Dessert</h4>
-                <p class="plat-nom"><?= htmlspecialchars($platsParType['dessert']??'') ?></p>
+                <p class="plat-nom"><?= htmlspecialchars($platsParType['dessert']) ?></p>
 
                 <p class="allergenes">
                     <strong>Allergènes :</strong><br>
