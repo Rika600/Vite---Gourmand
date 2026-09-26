@@ -46,7 +46,7 @@ $theme = $menuComplet['themes'][0]->getLibelle() ?? 'Menu';
             <div class="menu-infos">
                 <h2 class="menu-titre"><?= htmlspecialchars($menu->getTitre()) ?></h2>
                 <hr class="plat-line mb-5">
-                <pre><?= print_r($platsParType, true) ?></pre>
+                
                 <p><?= htmlspecialchars($menu->getDescription()) ?></p>
 
                 <h4 class="plat-type">Entrée</h4>
