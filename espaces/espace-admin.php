@@ -219,7 +219,7 @@ foreach ($stats as $s) {
         <?php foreach ($stats as $s) : ?>
             <div class="card mb-2 p-3">
                 <p>
-                    <strong><?= htmlspecialchars($s['Titre']) ?></strong>
+                    <strong><?= htmlspecialchars($s['Titre'] ??'') ?></strong>
                     — <?= $s['nb_commandes'] ?> commande(s)
                     — CA : <?= number_format($s['chiffre_affaires'] ?? 0, 2, ',', ' ') ?> €
                 </p>
