@@ -1,6 +1,6 @@
 <?php
 // ===== XAMPP local =====
-define('BASE_URL', getenv('BASE_URL') ?: '/vite-gourmand/');
+define('BASE_URL', '/vite-gourmand/');
 define('DB_HOST', '127.0.0.1');
 define('DB_PORT', '3307');
 define('DB_NAME', 'vite_gourmand');
