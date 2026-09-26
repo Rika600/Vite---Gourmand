@@ -53,7 +53,7 @@ class MenuService
         $result = ['entree' => null, 'plat' => null, 'dessert' => null];
         foreach ($plats as $p) {
             $type = $p->getType() ?? '';
-            if (isset($result[$type])) {
+            if (array_key_exists($type, $result)) {
                 $result[$type] = $p->getNom();
             }
         }
