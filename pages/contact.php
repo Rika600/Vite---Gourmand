@@ -1,6 +1,7 @@
 <?php
 $pageTitle = 'Contact - Vite & Gourmand';
 require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__. '/../src/mailer.php';
 
 // Traitement du formulaire quand il est soumis
 $message_succes = '';
@@ -19,8 +20,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $message_erreur = 'Adresse email invalide.';
     } else {
-        // Tout est bon
+    $corps = '
+        <h2>Nouveau message de contact</h2>
+        <p><strong>Nom :</strong> ' . htmlspecialchars($nom) . '</p>
+        <p><strong>Email :</strong> ' . htmlspecialchars($email) . '</p>
+        <p><strong>Sujet :</strong> ' . htmlspecialchars($sujet) . '</p>
+        <p><strong>Message :</strong><br>' . nl2br(htmlspecialchars($description)) . '</p>
+    ';
+
+    if (envoyerMail(MAIL_USERNAME, 'Contact - ' . $sujet, $corps)) {
         $message_succes = 'Votre message a bien été envoyé. Nous vous répondrons rapidement.';
+    } else {
+        $message_erreur = 'Une erreur est survenue lors de l\'envoi du message.';
     }
 }
 ?>
