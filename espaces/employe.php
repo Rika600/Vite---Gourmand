@@ -125,7 +125,7 @@ $avis = $avisService->getAvisEnAttente();
             <div class="card mb-3 p-3">
                 <p><strong><?= htmlspecialchars($cmd['numero_commande']) ?></strong> — <?= htmlspecialchars($cmd['nom']) ?> <?= htmlspecialchars($cmd['prenom']) ?> (<?= htmlspecialchars($cmd['email']) ?>)</p>
                 <p>Menu : <?= htmlspecialchars($cmd['titre']) ?> | <?= $cmd['nombre_personnes'] ?> pers. | <?= number_format($cmd['prix_total'], 2, ',', ' ') ?> €</p>
-                <p>Livraison : <?= htmlspecialchars($cmd['date_livraison']) ?> à <?= htmlspecialchars($cmd['heure_livraison']) ?> — <?= htmlspecialchars($cmd['adresse_livraison']) ?>, <?= htmlspecialchars($cmd['ville_livraison']) ?></p>
+                <p>Livraison : <?= date('d/m/Y', strtotime($cmd['date_livraison'])) ?> à <?= date('H:i', strtotime($cmd['heure_livraison'])) ?> — <?= htmlspecialchars($cmd['adresse_livraison']) ?>, <?= htmlspecialchars($cmd['ville_livraison']) ?></p>
                 <p>Statut actuel : <strong><?= htmlspecialchars($cmd['statut']) ?></strong></p>
 
                 <?php if ($cmd['statut'] !== 'terminee' && $cmd['statut'] !== 'annulee') : ?>
