@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $utilisateur = $utilisateurService->getUtilisateurParEmail($email);
         if ($utilisateur) {
-            $lien = 'http://localhost:8080' . BASE_URL . 'pages/reinitialiser-mdp.php?token=' . $token;
+            $lien = 'http://https://vite-gourmand-production-4cbf.up.railway.app' . BASE_URL . 'pages/reinitialiser-mdp.php?token=' . $token;
             envoyerMail($email, 'Réinitialisation de votre mot de passe',
                 '<h2>Réinitialisation de mot de passe</h2>
                 <p>Bonjour ' . htmlspecialchars($utilisateur->getPrenom()) . ',</p>
