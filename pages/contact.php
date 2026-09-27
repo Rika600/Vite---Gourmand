@@ -34,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message_erreur = 'Une erreur est survenue lors de l\'envoi du message.';
     }
 }
+}
 ?>
 
 <div class="container my-5">
