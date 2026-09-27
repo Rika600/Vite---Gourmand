@@ -15,12 +15,13 @@ $token = $_GET['token'] ?? '';
 
 if ($token !== '') {
     $utilisateur = $utilisateurService->verifierToken($token);
+
     if ($utilisateur) {
         $token_valide = true;
     } else {
         $message_erreur = 'Ce lien est invalide ou a expiré.';
     }
-} else {
+} else if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $message_erreur = 'Aucun token fourni.';
 }
 
