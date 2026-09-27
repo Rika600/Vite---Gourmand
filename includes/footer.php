@@ -9,9 +9,9 @@
         </div>
         <hr>
         <p>
-            <a href="<?= BASE_URL ?>includes/mentions-legales.php" class="text-white text-decoration-none">Mentions Légales</a>
+            <a href="<?= BASE_URL ?>pages/mentions-legales.php" class="text-white text-decoration-none">Mentions Légales</a>
             |
-            <a href="<?= BASE_URL ?>includes/cgv.php" class="text-white text-decoration-none">Conditions Générales de Vente</a>
+            <a href="<?= BASE_URL ?>pages/cgv.php" class="text-white text-decoration-none">Conditions Générales de Vente</a>
         </p>
         <p>&copy; <?= date('Y') ?> Vite & Gourmand - Tous droits réservés</p>
     </div>
