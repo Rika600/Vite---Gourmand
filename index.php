@@ -23,7 +23,7 @@ require_once 'includes/header.php';
         <h1>Vite & Gourmand</h1>
         <p>Traiteur depuis 25 ans</p>
         <div class="like-button">
-            <a href="<?= BASE_URL ?>menus.php" class="btn btn-dark hero-button">Découvrir nos créations</a>
+            <a href="<?= BASE_URL ?>pages/menus.php" class="btn btn-dark hero-button">Découvrir nos créations</a>
         </div>
     </div>
 </div>
