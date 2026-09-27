@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         imgWrapper.className = 'menu-image-wrapper';
 
                         var img = document.createElement('img');
-                        img.src = BASE_URL + m.image_principale;
+                        img.src = m.image_principale;
                         img.alt = m.titre;
                         img.className = 'menu-image';
                         imgWrapper.appendChild(img);
