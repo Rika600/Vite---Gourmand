@@ -183,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="row g-5">
                     <div class="col-6">
                         <label for="date_livraison">Date de livraison :
-                            <input id="date_livraison" name="date_livraison" type="text" placeholder="jj/mm/aaaa" required>
+                            <input id="date_livraison" name="date_livraison" type="date" required>
                         </label>
                     </div>
                     <div class="col-6">
